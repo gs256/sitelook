@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/davecgh/go-spew/spew"
 )
 
 type SearchResult struct {
@@ -15,11 +16,12 @@ type SearchResult struct {
 	Description string
 }
 
-func parse(url string) {
+func getDocument(url string) (*goquery.Document, error) {
 	client := http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
+
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	req.Header = http.Header{
@@ -30,21 +32,35 @@ func parse(url string) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		return nil, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
 	}
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	fmt.Printf("%d\n", len(doc.Text()))
+	return doc, nil
+}
+
+type SearchPageContext struct {
+	searchTerm    string
+	searchResults []SearchResult
+}
+
+func parseSearchPage(searchTerm string) (*SearchPageContext, error) {
+	url := getSearchUrl(searchTerm)
+	doc, err := getDocument(url)
+
+	if err != nil {
+		return nil, err
+	}
 
 	results := []SearchResult{}
 
@@ -60,19 +76,31 @@ func parse(url string) {
 				Title:       title,
 				Description: description,
 			})
-			// fmt.Printf("%d. %s (%s) - %s\n", i, url, title, description)
 		}
 	})
 
 	searchInput := doc.Find("textarea").First()
-	fmt.Printf("Search term: %s\n", searchInput.Text())
-}
 
-func main() {
-	parse(getSearchUrl("how long is an hour"))
+	context := SearchPageContext{
+		searchTerm:    searchInput.Text(),
+		searchResults: results,
+	}
+
+	return &context, nil
 }
 
 func getSearchUrl(searchTerm string) string {
 	escapedTerm := url.QueryEscape(searchTerm)
 	return fmt.Sprintf("https://google.com/search?q=%s", escapedTerm)
+}
+
+func main() {
+	searchPageContext, err := parseSearchPage("tesr")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// fmt.Printf("%+v\n", searchPageContext)
+	spew.Dump(searchPageContext)
 }
