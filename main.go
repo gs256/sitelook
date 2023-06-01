@@ -18,6 +18,24 @@ type SearchResult struct {
 	Description string
 }
 
+type PageLink struct {
+	PageNumber int
+	Offset     int
+	IsCurrent  bool
+}
+
+type Paginaiton struct {
+	PageLinks      []PageLink
+	NextOffset     int
+	PreviousOffset int
+}
+
+type SearchPageContext struct {
+	SearchTerm    string
+	SearchResults []SearchResult
+	Pagination    Paginaiton
+}
+
 func getDocument(url string) (*goquery.Document, error) {
 	client := http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
@@ -51,26 +69,8 @@ func getDocument(url string) (*goquery.Document, error) {
 	return doc, nil
 }
 
-type PageLink struct {
-	PageNumber int
-	Offset     int
-	IsCurrent  bool
-}
-
-type Paginaiton struct {
-	PageLinks      []PageLink
-	NextOffset     int
-	PreviousOffset int
-}
-
-type SearchPageContext struct {
-	SearchTerm    string
-	SearchResults []SearchResult
-	Pagination    Paginaiton
-}
-
-func parseSearchPage(searchTerm string) (*SearchPageContext, error) {
-	url := getSearchUrl(searchTerm)
+func parseSearchPage(searchTerm string, start int) (*SearchPageContext, error) {
+	url := getSearchUrl(searchTerm, start)
 	doc, err := getDocument(url)
 
 	if err != nil {
@@ -107,7 +107,6 @@ func parseSearchPage(searchTerm string) (*SearchPageContext, error) {
 				log.Printf("error parsing pagination link: `%s`", html)
 			}
 		}
-		fmt.Println(s.Text())
 	})
 
 	results := []SearchResult{}
@@ -176,13 +175,13 @@ func getOffsetFromHref(href string) (offset int, isSet bool) {
 	return offsetInt, true
 }
 
-func getSearchUrl(searchTerm string) string {
+func getSearchUrl(searchTerm string, start int) string {
 	escapedTerm := url.QueryEscape(searchTerm)
-	return fmt.Sprintf("https://google.com/search?q=%s", escapedTerm)
+	return fmt.Sprintf("https://google.com/search?q=%s&start=%d", escapedTerm, start)
 }
 
 func main() {
-	searchPageContext, err := parseSearchPage("tesr")
+	searchPageContext, err := parseSearchPage("tesr", 80)
 
 	if err != nil {
 		log.Fatal(err)
