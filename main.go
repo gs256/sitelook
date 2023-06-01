@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/davecgh/go-spew/spew"
@@ -49,9 +51,22 @@ func getDocument(url string) (*goquery.Document, error) {
 	return doc, nil
 }
 
+type PageLink struct {
+	PageNumber int
+	Offset     int
+	IsCurrent  bool
+}
+
+type Paginaiton struct {
+	PageLinks      []PageLink
+	NextOffset     int
+	PreviousOffset int
+}
+
 type SearchPageContext struct {
-	searchTerm    string
-	searchResults []SearchResult
+	SearchTerm    string
+	SearchResults []SearchResult
+	Pagination    Paginaiton
 }
 
 func parseSearchPage(searchTerm string) (*SearchPageContext, error) {
@@ -61,6 +76,39 @@ func parseSearchPage(searchTerm string) (*SearchPageContext, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	paginationDiv := doc.Find("div[role=\"navigation\"] table[role=\"presentation\"]").First()
+	pageLinks := []PageLink{}
+	previousPageOffset := 0
+	nextPageOffset := 0
+	paginationDiv.Find("td").Each(func(i int, s *goquery.Selection) {
+		if _, exists := s.Attr("role"); exists {
+			if i == 0 {
+				previousPageOffset, _ = getOffsetFromSelection(s)
+			} else {
+				nextPageOffset, _ = getOffsetFromSelection(s)
+			}
+		} else {
+			offset, hrefExists := getOffsetFromSelection(s)
+			hasSpanInside := false
+			if !hrefExists {
+				hasSpanInside = s.Find("span").Length() > 0
+			}
+			number, err := strconv.Atoi(strings.TrimSpace(s.Text()))
+			if err == nil && (hrefExists || hasSpanInside) {
+				pageLink := PageLink{
+					PageNumber: number,
+					Offset:     offset,
+					IsCurrent:  hasSpanInside,
+				}
+				pageLinks = append(pageLinks, pageLink)
+			} else {
+				html, _ := s.Html()
+				log.Printf("error parsing pagination link: `%s`", html)
+			}
+		}
+		fmt.Println(s.Text())
+	})
 
 	results := []SearchResult{}
 
@@ -82,11 +130,50 @@ func parseSearchPage(searchTerm string) (*SearchPageContext, error) {
 	searchInput := doc.Find("textarea").First()
 
 	context := SearchPageContext{
-		searchTerm:    searchInput.Text(),
-		searchResults: results,
+		SearchTerm:    searchInput.Text(),
+		SearchResults: results,
+		Pagination: Paginaiton{
+			PageLinks:      pageLinks,
+			NextOffset:     nextPageOffset,
+			PreviousOffset: previousPageOffset,
+		},
 	}
 
 	return &context, nil
+}
+
+func getOffsetFromSelection(s *goquery.Selection) (offset int, isSet bool) {
+	href, exists := s.Find("a").First().Attr("href")
+	if !exists {
+		return 0, false
+	}
+
+	return getOffsetFromHref(href)
+}
+
+func getOffsetFromHref(href string) (offset int, isSet bool) {
+	hrefUrl, err := url.Parse(href)
+	if err != nil {
+		return 0, false
+	}
+
+	params, err := url.ParseQuery(hrefUrl.RawQuery)
+	if err != nil {
+		return 0, false
+	}
+
+	offsetParam := params.Get("start")
+	if len(offsetParam) == 0 {
+		return 0, false
+	}
+
+	offsetInt, err := strconv.Atoi(offsetParam)
+	if err != nil {
+		return 0, false
+
+	}
+
+	return offsetInt, true
 }
 
 func getSearchUrl(searchTerm string) string {
@@ -101,6 +188,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// fmt.Printf("%+v\n", searchPageContext)
 	spew.Dump(searchPageContext)
 }
