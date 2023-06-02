@@ -25,7 +25,7 @@
         <div class="container-md my-3">
             <span class="h4 text-primary-emphasis">sitelook ⌕</span>
             <form action="/search" method="get">
-                <div class="input-group mb-5 mt-3">
+                <div class="input-group mt-3">
                     <input
                         name="q"
                         type="text"
@@ -39,27 +39,24 @@
                 </div>
             </form>
 
-            {{range .SearchResults}}
-            <div class="card my-3">
-                <div class="card-header">
-                    <a href="{{.Url}}" class="link-underline link-underline-opacity-0">
-                        <span class="h5">{{.Title}}</span>
-                    </a>
-                    <br />
+            <ul class="nav nav-pills my-3">
+                <li class="nav-item">
                     <a
-                        href="{{.Url}}"
-                        class="link link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-                        >{{.UrlTitle}}</a
+                        class="nav-link active"
+                        aria-current="page"
+                        href="{{.Navigation.AllSearchHref}}"
+                        >All</a
                     >
-                </div>
-                {{if .Description}}
-                <div class="card-body">
-                    <p class="card-text">{{.Description}}</p>
-                </div>
-                {{end}}
-            </div>
-            {{end}}
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{.Navigation.ImageSearchHref}}">Images</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{.Navigation.VideoSearchHref}}">Videos</a>
+                </li>
+            </ul>
 
+            {{template "search-content.html" .}}
             <span></span>
 
             {{if .Pagination.Visible}}

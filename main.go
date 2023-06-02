@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -55,10 +56,17 @@ type PaginationContext struct {
 	NextLinkActive     bool
 }
 
+type SearchNavigationContext struct {
+	AllSearchHref   string
+	ImageSearchHref string
+	VideoSearchHref string
+}
+
 type SearchPageContext struct {
 	SearchTerm    string
 	SearchResults []SearchResultContext
 	Pagination    PaginationContext
+	Navigation    SearchNavigationContext
 }
 
 func createSearchResultContext(searchResult SearchResult) SearchResultContext {
@@ -115,6 +123,22 @@ func createPaginationContext(pagination Pagination, currentUrl *url.URL) Paginat
 	}
 }
 
+func createNavigationContext(currentUrl *url.URL) SearchNavigationContext {
+	query := currentUrl.Query()
+	query.Del("tbm")
+	allSearchHref := createHref(currentUrl, query)
+	query.Set("tbm", "isch")
+	imageSearchHref := createHref(currentUrl, query)
+	query.Set("tbm", "vid")
+	videoSearchHref := createHref(currentUrl, query)
+
+	return SearchNavigationContext{
+		AllSearchHref:   allSearchHref,
+		ImageSearchHref: imageSearchHref,
+		VideoSearchHref: videoSearchHref,
+	}
+}
+
 func createSearchPageContext(searchPage SearchPage, currentUrl *url.URL) SearchPageContext {
 	searchResults := make([]SearchResultContext, len(searchPage.SearchResults))
 
@@ -126,6 +150,7 @@ func createSearchPageContext(searchPage SearchPage, currentUrl *url.URL) SearchP
 		SearchTerm:    searchPage.SearchTerm,
 		SearchResults: searchResults,
 		Pagination:    createPaginationContext(searchPage.Pagination, currentUrl),
+		Navigation:    createNavigationContext(currentUrl),
 	}
 }
 
@@ -133,8 +158,18 @@ func createEmptySearchPageContext() SearchPageContext {
 	return SearchPageContext{}
 }
 
+func homeRoute(c *gin.Context) {
+	c.Redirect(http.StatusPermanentRedirect, "/search")
+}
+
 func searchRoute(c *gin.Context) {
 	searchTerm := c.Query("q")
+	searchType := c.Query("tbm")
+	if len(searchType) > 0 {
+		c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("https://google.com/search?q=%s&tbm=%s", searchTerm, searchType))
+		return
+	}
+
 	startQuery := c.Query("start")
 	start, _ := strconv.Atoi(startQuery)
 
@@ -164,6 +199,7 @@ func searchRoute(c *gin.Context) {
 
 func main() {
 	engine := gin.Default()
+	engine.GET("/", homeRoute)
 	engine.GET("/api/search", apiSearchRoute)
 	engine.GET("/search", searchRoute)
 	engine.Static("./static", "./static/")
