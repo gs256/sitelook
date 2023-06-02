@@ -111,18 +111,35 @@ func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
 	results := []SearchResult{}
 
 	searchDiv := doc.Find("#search").First()
-	searchDiv.Find("div[eid] > div").Each(func(i int, s *goquery.Selection) {
-		url, hasUrl := s.Find("div[data-snf] a").First().Attr("href")
-		title := s.Find("div[data-snhf=\"0\"] h3").First().Text()
-		description := s.Find("div[data-sncf=\"1\"] div:last-of-type").First().Text()
-
-		if hasUrl && len(title) > 0 {
-			results = append(results, SearchResult{
-				Url:         url,
-				Title:       title,
-				Description: description,
-			})
+	searchDiv.Find(".g > div").Each(func(i int, searchItem *goquery.Selection) {
+		if searchItem.Find(".g").Length() != 0 {
+			return
 		}
+
+		titleElement := searchItem.Find("h3").First()
+		if titleElement.Length() == 0 {
+			return
+		}
+		title := titleElement.Text()
+		url, _ := searchItem.Find("a").First().Attr("href")
+
+		description := ""
+		descriptionElement := searchItem.Find("div[data-sncf=\"1\"]").First()
+
+		if descriptionElement.Length() != 0 {
+			description = descriptionElement.Text()
+		} else {
+			spans := searchItem.Find("span").Last()
+			if spans.Length() > 0 {
+				description = spans.Text()
+			}
+		}
+
+		results = append(results, SearchResult{
+			Url:         url,
+			Title:       title,
+			Description: description,
+		})
 	})
 
 	searchInput := doc.Find("textarea").First()
