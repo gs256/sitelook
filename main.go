@@ -123,30 +123,35 @@ func createSearchPageContext(searchPage SearchPage, currentUrl *url.URL) SearchP
 	}
 }
 
+func createEmptySearchPageContext() SearchPageContext {
+	return SearchPageContext{}
+}
+
 func searchRoute(c *gin.Context) {
 	searchTerm := c.Query("q")
 	startQuery := c.Query("start")
+	start, _ := strconv.Atoi(startQuery)
+
+	var searchPageContext SearchPageContext
 
 	if len(searchTerm) == 0 {
-		c.Writer.WriteHeader(http.StatusBadRequest)
-		c.Writer.WriteString("empty search term")
-		return
-	}
+		searchPageContext = createEmptySearchPageContext()
+	} else {
+		searchPage, err := parseSearchPage(searchTerm, start)
+		if err != nil {
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			log.Fatal(err)
+		}
 
-	start, _ := strconv.Atoi(startQuery)
-	searchPage, err := parseSearchPage(searchTerm, start)
-	currentUrl := c.Request.URL
-	searchPageContext := createSearchPageContext(*searchPage, currentUrl)
+		currentUrl := c.Request.URL
+		searchPageContext = createSearchPageContext(*searchPage, currentUrl)
+
+	}
 
 	file, _ := os.OpenFile("log.txt", os.O_CREATE|os.O_WRONLY, 0666)
 	log.SetOutput(file)
 	defer file.Close()
 	spew.Fdump(log.Writer(), searchPageContext)
-
-	if err != nil {
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		log.Fatal(err)
-	}
 
 	c.HTML(http.StatusOK, "search-page.html", searchPageContext)
 }
