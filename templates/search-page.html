@@ -56,6 +56,14 @@
                 </li>
             </ul>
 
+            {{if .SearchCorrection.Present}}
+            <span>{{.SearchCorrection.Title}}</span>
+            <a href="{{.SearchCorrection.CorrectionHref}}"
+                >{{.SearchCorrection.CorrectSearchTerm}}</a
+            >
+            {{end}}
+
+            <span></span>
             {{template "search-content.html" .}}
             <span></span>
 

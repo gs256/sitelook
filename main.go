@@ -62,11 +62,32 @@ type SearchNavigationContext struct {
 	VideoSearchHref string
 }
 
+type SearchCorrectionContext struct {
+	Present           bool
+	Title             string
+	CorrectSearchTerm string
+	CorrectionHref    string
+}
+
 type SearchPageContext struct {
-	SearchTerm    string
-	SearchResults []SearchResultContext
-	Pagination    PaginationContext
-	Navigation    SearchNavigationContext
+	SearchTerm       string
+	SearchResults    []SearchResultContext
+	Pagination       PaginationContext
+	Navigation       SearchNavigationContext
+	SearchCorrection SearchCorrectionContext
+}
+
+func createSearchCorrectionContext(searchCorrection SearchCorrection, currentUrl *url.URL) SearchCorrectionContext {
+	query := currentUrl.Query()
+	query.Set("q", searchCorrection.CorrectSearchTerm)
+	href := createHref(currentUrl, query)
+
+	return SearchCorrectionContext{
+		Present:           searchCorrection.Present,
+		Title:             searchCorrection.Title,
+		CorrectSearchTerm: searchCorrection.CorrectSearchTerm,
+		CorrectionHref:    href,
+	}
 }
 
 func createSearchResultContext(searchResult SearchResult) SearchResultContext {
@@ -147,10 +168,11 @@ func createSearchPageContext(searchPage SearchPage, currentUrl *url.URL) SearchP
 	}
 
 	return SearchPageContext{
-		SearchTerm:    searchPage.SearchTerm,
-		SearchResults: searchResults,
-		Pagination:    createPaginationContext(searchPage.Pagination, currentUrl),
-		Navigation:    createNavigationContext(currentUrl),
+		SearchTerm:       searchPage.SearchTerm,
+		SearchResults:    searchResults,
+		Pagination:       createPaginationContext(searchPage.Pagination, currentUrl),
+		Navigation:       createNavigationContext(currentUrl),
+		SearchCorrection: createSearchCorrectionContext(searchPage.SearchCorrection, currentUrl),
 	}
 }
 

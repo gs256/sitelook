@@ -29,10 +29,17 @@ type Pagination struct {
 	NextOffset     int
 }
 
+type SearchCorrection struct {
+	Present           bool
+	Title             string
+	CorrectSearchTerm string
+}
+
 type SearchPage struct {
-	SearchTerm    string
-	SearchResults []SearchResult
-	Pagination    Pagination
+	SearchTerm       string
+	SearchResults    []SearchResult
+	Pagination       Pagination
+	SearchCorrection SearchCorrection
 }
 
 func getDocument(url string) (*goquery.Document, error) {
@@ -69,8 +76,8 @@ func getDocument(url string) (*goquery.Document, error) {
 }
 
 func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
-	url := getSearchUrl(searchTerm, start)
-	doc, err := getDocument(url)
+	searchUrl := getSearchUrl(searchTerm, start)
+	doc, err := getDocument(searchUrl)
 
 	if err != nil {
 		return nil, err
@@ -143,6 +150,21 @@ func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
 	})
 
 	searchInput := doc.Find("textarea").First()
+	correctionContainer := doc.Find("#taw").First()
+	correction := SearchCorrection{
+		Present:           false,
+		Title:             "",
+		CorrectSearchTerm: searchTerm,
+	}
+
+	if correctionContainer.Length() != 0 {
+		correction.Present = true
+		correction.Title = correctionContainer.Find("p > span").First().Text()
+		correctionHref, _ := correctionContainer.Find("p > a").First().Attr("href")
+		correctionUrl, _ := url.Parse(correctionHref)
+		correctionSearch := correctionUrl.Query().Get("q")
+		correction.CorrectSearchTerm = correctionSearch
+	}
 
 	searchPage := SearchPage{
 		SearchTerm:    searchInput.Text(),
@@ -152,6 +174,7 @@ func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
 			NextOffset:     nextPageOffset,
 			PreviousOffset: previousPageOffset,
 		},
+		SearchCorrection: correction,
 	}
 
 	return &searchPage, nil
