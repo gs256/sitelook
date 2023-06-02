@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func searchRoute(c *gin.Context) {
+func apiSearchRoute(c *gin.Context) {
 	searchTerm := c.Query("q")
 	startQuery := c.Query("start")
 
@@ -29,8 +29,15 @@ func searchRoute(c *gin.Context) {
 	c.JSON(http.StatusOK, searchPageContext)
 }
 
+func searchRoute(c *gin.Context) {
+	c.HTML(http.StatusOK, "search-page.html", nil)
+}
+
 func main() {
-	r := gin.Default()
-	r.GET("/api/search", searchRoute)
-	r.Run()
+	engine := gin.Default()
+	engine.GET("/api/search", apiSearchRoute)
+	engine.GET("/search", searchRoute)
+	engine.Static("./static", "./static/")
+	engine.LoadHTMLGlob("templates/*")
+	engine.Run()
 }
