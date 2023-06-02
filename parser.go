@@ -23,16 +23,16 @@ type PageLink struct {
 	IsCurrent  bool
 }
 
-type Paginaiton struct {
+type Pagination struct {
 	PageLinks      []PageLink
-	NextOffset     int
 	PreviousOffset int
+	NextOffset     int
 }
 
-type SearchPageContext struct {
+type SearchPage struct {
 	SearchTerm    string
 	SearchResults []SearchResult
-	Pagination    Paginaiton
+	Pagination    Pagination
 }
 
 func getDocument(url string) (*goquery.Document, error) {
@@ -68,7 +68,7 @@ func getDocument(url string) (*goquery.Document, error) {
 	return doc, nil
 }
 
-func parseSearchPage(searchTerm string, start int) (*SearchPageContext, error) {
+func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
 	url := getSearchUrl(searchTerm, start)
 	doc, err := getDocument(url)
 
@@ -127,17 +127,17 @@ func parseSearchPage(searchTerm string, start int) (*SearchPageContext, error) {
 
 	searchInput := doc.Find("textarea").First()
 
-	context := SearchPageContext{
+	searchPage := SearchPage{
 		SearchTerm:    searchInput.Text(),
 		SearchResults: results,
-		Pagination: Paginaiton{
+		Pagination: Pagination{
 			PageLinks:      pageLinks,
 			NextOffset:     nextPageOffset,
 			PreviousOffset: previousPageOffset,
 		},
 	}
 
-	return &context, nil
+	return &searchPage, nil
 }
 
 func getOffsetFromSelection(s *goquery.Selection) (offset int, isSet bool) {
