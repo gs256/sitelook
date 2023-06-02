@@ -47,9 +47,12 @@ type PageLinkContext struct {
 }
 
 type PaginationContext struct {
-	PageLinks   []PageLinkContext
-	PreviousUrl string
-	NextUrl     string
+	Visible            bool
+	PageLinks          []PageLinkContext
+	PreviousUrl        string
+	PreviousLinkActive bool
+	NextUrl            string
+	NextLinkActive     bool
 }
 
 type SearchPageContext struct {
@@ -103,9 +106,12 @@ func createPaginationContext(pagination Pagination, currentUrl *url.URL) Paginat
 	spew.Dump(query, nextUrl)
 
 	return PaginationContext{
-		PageLinks:   pageLinks,
-		PreviousUrl: previousUrl,
-		NextUrl:     nextUrl,
+		Visible:            len(pageLinks) > 0,
+		PageLinks:          pageLinks,
+		PreviousUrl:        previousUrl,
+		PreviousLinkActive: len(pageLinks) > 0 && !pageLinks[0].IsCurrent,
+		NextUrl:            nextUrl,
+		NextLinkActive:     len(pageLinks) > 0 && !pageLinks[len(pageLinks)-1].IsCurrent,
 	}
 }
 

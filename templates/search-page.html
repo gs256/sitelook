@@ -22,9 +22,10 @@
         <link rel="stylesheet" href="/static/css/search-page.css" />
     </head>
     <body>
-        <div class="container-md my-5">
+        <div class="container-md my-3">
+            <span class="h4 text-primary-emphasis">sitelook ⌕</span>
             <form action="/search" method="get">
-                <div class="input-group mb-5">
+                <div class="input-group mb-5 mt-3">
                     <input
                         name="q"
                         type="text"
@@ -34,9 +35,7 @@
                         aria-describedby="button-addon2"
                         value="{{.SearchTerm}}"
                     />
-                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">
-                        Search
-                    </button>
+                    <button class="btn btn-primary" type="submit" id="button-addon2">Search</button>
                 </div>
             </form>
 
@@ -59,23 +58,35 @@
             </div>
             {{end}}
 
+            <span></span>
+
+            {{if .Pagination.Visible}}
             <nav aria-label="pagination" class="mt-5">
                 <ul class="pagination justify-content-center">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" aria-label="Previous">
+                    <li class="page-item {{or .Pagination.PreviousLinkActive `disabled`}}">
+                        <a
+                            class="page-link"
+                            href="{{.Pagination.PreviousUrl}}"
+                            aria-label="Previous"
+                        >
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#" aria-label="Next">
+
+                    {{range .Pagination.PageLinks}}
+                    <li class="page-item {{and .IsCurrent `active`}}">
+                        <a class="page-link" href="{{.PageUrl}}">{{.PageNumber}}</a>
+                    </li>
+                    {{end}}
+
+                    <li class="page-item {{or .Pagination.NextLinkActive `disabled`}}">
+                        <a class="page-link" href="{{.Pagination.NextUrl}}" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
                 </ul>
             </nav>
+            {{end}}
         </div>
     </body>
 </html>
