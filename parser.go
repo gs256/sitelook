@@ -193,5 +193,5 @@ func getOffsetFromHref(href string) (offset int, isSet bool) {
 
 func getSearchUrl(searchTerm string, start int) string {
 	escapedTerm := url.QueryEscape(searchTerm)
-	return fmt.Sprintf("https://google.com/search?q=%s&start=%d&lr=lang_en", escapedTerm, start)
+	return fmt.Sprintf("https://google.com/search?q=%s&start=%d", escapedTerm, start)
 }

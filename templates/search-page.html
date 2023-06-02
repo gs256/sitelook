@@ -52,9 +52,11 @@
                         >{{.UrlTitle}}</a
                     >
                 </div>
+                {{if .Description}}
                 <div class="card-body">
                     <p class="card-text">{{.Description}}</p>
                 </div>
+                {{end}}
             </div>
             {{end}}
 
