@@ -10,3 +10,4 @@
 -   parses only one nested result e.g. `desmos calculator`
 -   display website favicons
 -   add favicon
+-   captcha

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -75,15 +76,17 @@ func getDocument(url string) (*goquery.Document, error) {
 	return doc, nil
 }
 
-func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
-	searchUrl := getSearchUrl(searchTerm, start)
-	doc, err := getDocument(searchUrl)
+func selectionEmpty(selection *goquery.Selection) bool {
+	return selection.Length() == 0
+}
 
-	if err != nil {
-		return nil, err
+func parsePagination(document *goquery.Document) (Pagination, error) {
+	paginationDiv := document.Find("div[role=\"navigation\"] table[role=\"presentation\"]").First()
+
+	if selectionEmpty(paginationDiv) {
+		return Pagination{}, errors.New("pagination container not found")
 	}
 
-	paginationDiv := doc.Find("div[role=\"navigation\"] table[role=\"presentation\"]").First()
 	pageLinks := []PageLink{}
 	previousPageOffset := 0
 	nextPageOffset := 0
@@ -115,25 +118,35 @@ func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
 		}
 	})
 
-	results := []SearchResult{}
+	return Pagination{
+		PageLinks:      pageLinks,
+		PreviousOffset: previousPageOffset,
+		NextOffset:     nextPageOffset,
+	}, nil
+}
 
-	searchDiv := doc.Find("#search").First()
+func parseSearchResults(document *goquery.Document) []SearchResult {
+	results := []SearchResult{}
+	searchDiv := document.Find("#search").First()
+
 	searchDiv.Find(".g > div").Each(func(i int, searchItem *goquery.Selection) {
-		if searchItem.Find(".g").Length() != 0 {
+		// if the item has nested results it will force them to be parsed individually
+		if !selectionEmpty(searchItem.Find(".g")) {
 			return
 		}
 
 		titleElement := searchItem.Find("h3").First()
-		if titleElement.Length() == 0 {
+		if selectionEmpty(titleElement) {
 			return
 		}
+
 		title := titleElement.Text()
 		url, _ := searchItem.Find("a").First().Attr("href")
 
 		description := ""
 		descriptionElement := searchItem.Find("div[data-sncf=\"1\"]").First()
 
-		if descriptionElement.Length() != 0 {
+		if !selectionEmpty(descriptionElement) {
 			description = descriptionElement.Text()
 		} else {
 			spans := searchItem.Find("span").Last()
@@ -149,12 +162,14 @@ func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
 		})
 	})
 
-	searchInput := doc.Find("textarea").First()
-	correctionContainer := doc.Find("#taw").First()
+	return results
+}
+
+func parseSearchCorrection(document *goquery.Document) SearchCorrection {
+	correctionContainer := document.Find("#taw").First()
+
 	correction := SearchCorrection{
-		Present:           false,
-		Title:             "",
-		CorrectSearchTerm: searchTerm,
+		Present: false,
 	}
 
 	if correctionContainer.Length() != 0 {
@@ -166,15 +181,36 @@ func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
 		correction.CorrectSearchTerm = correctionSearch
 	}
 
+	return correction
+}
+
+func parseSearchInput(document *goquery.Document) string {
+	searchInput := document.Find("textarea").First()
+	return searchInput.Text()
+}
+
+func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
+	searchUrl := getSearchUrl(searchTerm, start)
+	document, err := getDocument(searchUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	searchInput := parseSearchInput(document)
+	searchResults := parseSearchResults(document)
+	searchCorrection := parseSearchCorrection(document)
+	pagination, err := parsePagination(document)
+
+	if err != nil {
+		log.Printf("pagination error: %s", err)
+	}
+
 	searchPage := SearchPage{
-		SearchTerm:    searchInput.Text(),
-		SearchResults: results,
-		Pagination: Pagination{
-			PageLinks:      pageLinks,
-			NextOffset:     nextPageOffset,
-			PreviousOffset: previousPageOffset,
-		},
-		SearchCorrection: correction,
+		SearchTerm:       searchInput,
+		SearchResults:    searchResults,
+		Pagination:       pagination,
+		SearchCorrection: searchCorrection,
 	}
 
 	return &searchPage, nil

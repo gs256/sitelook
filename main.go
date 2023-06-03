@@ -129,10 +129,8 @@ func createPaginationContext(pagination Pagination, currentUrl *url.URL) Paginat
 
 	query.Set("start", strconv.Itoa(pagination.PreviousOffset))
 	previousUrl := createHref(currentUrl, query)
-	spew.Dump(query, previousUrl)
 	query.Set("start", strconv.Itoa(pagination.NextOffset))
 	nextUrl := createHref(currentUrl, query)
-	spew.Dump(query, nextUrl)
 
 	return PaginationContext{
 		Visible:            len(pageLinks) > 0,
