@@ -9,7 +9,6 @@
 -   fix pagination errors for `wikipedia`
 -   parses only one nested result e.g. `desmos calculator`
 -   display website favicons
--   add favicon
 -   captcha
 -   parse filetype
 -   nested results wrong order e.g. `test filetype:pdf`
