@@ -11,6 +11,5 @@
 -   display website favicons
 -   add favicon
 -   captcha
--   migrate to document.FindMatcher(goquery.Single(...))
 -   parse filetype
 -   nested results wrong order e.g. `test filetype:pdf`

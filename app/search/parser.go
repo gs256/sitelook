@@ -49,8 +49,16 @@ func selectionEmpty(selection *goquery.Selection) bool {
 	return selection.Length() == 0
 }
 
+func findSingle(selection *goquery.Selection, selector string) *goquery.Selection {
+	return selection.FindMatcher(goquery.Single(selector))
+}
+
+func hasInside(selection *goquery.Selection, selector string) bool {
+	return !selectionEmpty(findSingle(selection, selector))
+}
+
 func parsePagination(document *goquery.Document) (Pagination, error) {
-	paginationDiv := document.Find("div[role=\"navigation\"] table[role=\"presentation\"]").First()
+	paginationDiv := findSingle(document.Selection, "div[role=\"navigation\"] table[role=\"presentation\"]")
 
 	if selectionEmpty(paginationDiv) {
 		return Pagination{}, errors.New("pagination container not found")
@@ -59,20 +67,20 @@ func parsePagination(document *goquery.Document) (Pagination, error) {
 	pageLinks := []PageLink{}
 	previousPageOffset := 0
 	nextPageOffset := 0
-	paginationDiv.Find("td").Each(func(i int, s *goquery.Selection) {
-		if _, exists := s.Attr("role"); exists {
+	paginationDiv.Find("td").Each(func(i int, td *goquery.Selection) {
+		if _, exists := td.Attr("role"); exists {
 			if i == 0 {
-				previousPageOffset, _ = getOffsetFromSelection(s)
+				previousPageOffset, _ = getOffsetFromSelection(td)
 			} else {
-				nextPageOffset, _ = getOffsetFromSelection(s)
+				nextPageOffset, _ = getOffsetFromSelection(td)
 			}
 		} else {
-			offset, hrefExists := getOffsetFromSelection(s)
+			offset, hrefExists := getOffsetFromSelection(td)
 			hasSpanInside := false
 			if !hrefExists {
-				hasSpanInside = s.Find("span").Length() > 0
+				hasSpanInside = hasInside(td, "span")
 			}
-			number, err := strconv.Atoi(strings.TrimSpace(s.Text()))
+			number, err := strconv.Atoi(strings.TrimSpace(td.Text()))
 			if err == nil && (hrefExists || hasSpanInside) {
 				pageLink := PageLink{
 					PageNumber: number,
@@ -81,7 +89,7 @@ func parsePagination(document *goquery.Document) (Pagination, error) {
 				}
 				pageLinks = append(pageLinks, pageLink)
 			} else {
-				html, _ := s.Html()
+				html, _ := td.Html()
 				log.Printf("error parsing pagination link: `%s`", html)
 			}
 		}
@@ -96,24 +104,24 @@ func parsePagination(document *goquery.Document) (Pagination, error) {
 
 func parseSearchResults(document *goquery.Document) []SearchResult {
 	results := []SearchResult{}
-	searchDiv := document.Find("#search").First()
+	searchDiv := findSingle(document.Selection, "#search")
 
 	searchDiv.Find(".g > div").Each(func(i int, searchItem *goquery.Selection) {
 		// if the item has nested results it will force them to be parsed individually
-		if !selectionEmpty(searchItem.Find(".g")) {
+		if hasInside(searchItem, ".g") {
 			return
 		}
 
-		titleElement := searchItem.Find("h3").First()
+		titleElement := findSingle(searchItem, "h3")
 		if selectionEmpty(titleElement) {
 			return
 		}
 
 		title := titleElement.Text()
-		url, _ := searchItem.Find("a").First().Attr("href")
+		url, _ := findSingle(searchItem, "a").Attr("href")
 
 		description := ""
-		descriptionElement := searchItem.Find("div[data-sncf=\"1\"]").First()
+		descriptionElement := findSingle(searchItem, "div[data-sncf=\"1\"]")
 
 		if !selectionEmpty(descriptionElement) {
 			description = descriptionElement.Text()
@@ -135,7 +143,7 @@ func parseSearchResults(document *goquery.Document) []SearchResult {
 }
 
 func parseSearchCorrection(document *goquery.Document) SearchCorrection {
-	correctionContainer := document.Find("#taw").First()
+	correctionContainer := findSingle(document.Selection, "#taw")
 
 	correction := SearchCorrection{
 		Present: false,
@@ -143,8 +151,8 @@ func parseSearchCorrection(document *goquery.Document) SearchCorrection {
 
 	if correctionContainer.Length() != 0 {
 		correction.Present = true
-		correction.Title = correctionContainer.Find("p > span").First().Text()
-		correctionHref, _ := correctionContainer.Find("p > a").First().Attr("href")
+		correction.Title = findSingle(correctionContainer, "p > span").Text()
+		correctionHref, _ := findSingle(correctionContainer, "p > a").Attr("href")
 		correctionUrl, _ := url.Parse(correctionHref)
 		correctionSearch := correctionUrl.Query().Get("q")
 		correction.CorrectSearchTerm = correctionSearch
@@ -154,7 +162,7 @@ func parseSearchCorrection(document *goquery.Document) SearchCorrection {
 }
 
 func parseSearchInput(document *goquery.Document) string {
-	searchInput := document.Find("textarea").First()
+	searchInput := findSingle(document.Selection, "textarea")
 	return searchInput.Text()
 }
 
@@ -178,8 +186,9 @@ func parseSearchPage(document *goquery.Document, start int) (*SearchPage, error)
 	return &searchPage, nil
 }
 
-func getOffsetFromSelection(s *goquery.Selection) (offset int, isSet bool) {
-	href, exists := s.Find("a").First().Attr("href")
+func getOffsetFromSelection(selection *goquery.Selection) (offset int, isSet bool) {
+	href, exists := findSingle(selection, "a").Attr("href")
+
 	if !exists {
 		return 0, false
 	}
