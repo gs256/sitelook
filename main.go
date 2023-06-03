@@ -212,7 +212,7 @@ func searchRoute(c *gin.Context) {
 
 	if status == http.StatusTooManyRequests {
 		captchaPageContext := createCaptchaPageContext(searchTerm)
-		c.HTML(http.StatusOK, "captcha-page.html", captchaPageContext)
+		c.HTML(http.StatusOK, "captcha-page", captchaPageContext)
 		return
 	}
 
@@ -235,7 +235,7 @@ func searchRoute(c *gin.Context) {
 	defer file.Close()
 	spew.Fdump(log.Writer(), searchPageContext)
 
-	c.HTML(http.StatusOK, "search-page.html", searchPageContext)
+	c.HTML(http.StatusOK, "search-page", searchPageContext)
 }
 
 func getDocument(url string) (document *goquery.Document, err error, status int) {
