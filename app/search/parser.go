@@ -158,7 +158,7 @@ func parseSearchInput(document *goquery.Document) string {
 	return searchInput.Text()
 }
 
-func parseSearchPage(document *goquery.Document, searchTerm string, start int) (*SearchPage, error) {
+func parseSearchPage(document *goquery.Document, start int) (*SearchPage, error) {
 	searchInput := parseSearchInput(document)
 	searchResults := parseSearchResults(document)
 	searchCorrection := parseSearchCorrection(document)

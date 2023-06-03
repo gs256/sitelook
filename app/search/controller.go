@@ -38,7 +38,7 @@ func createHref(url *url.URL, query url.Values) string {
 }
 
 func SearchRoute(c *gin.Context) {
-	searchTerm := c.Query("q")
+	searchTerm, _ := url.QueryUnescape(c.Query("q"))
 	searchType := c.Query("tbm")
 	if len(searchType) > 0 {
 		c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("https://google.com/search?q=%s&tbm=%s", searchTerm, searchType))

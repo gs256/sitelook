@@ -41,7 +41,7 @@ func Search(searchTerm string, offset int) (response SearchResponse, err error) 
 		searchPage := createEmptySearchPage()
 		return SearchResponse{Type: SearchResponsePage, SearchPage: &searchPage, Status: status}, nil
 	} else {
-		searchPage, err := parseSearchPage(document, searchTerm, offset)
+		searchPage, err := parseSearchPage(document, offset)
 
 		if err != nil {
 			return SearchResponse{Type: SearchResponseError, Status: status}, err
@@ -53,10 +53,9 @@ func Search(searchTerm string, offset int) (response SearchResponse, err error) 
 
 func getSearchUrl(searchTerm string, start int) string {
 	searchUrl, _ := url.Parse("https://google.com/search")
-	escapedTerm := url.QueryEscape(searchTerm)
 	query := searchUrl.Query()
 
-	query.Add("q", escapedTerm)
+	query.Add("q", searchTerm)
 
 	if start > 0 {
 		query.Add("start", strconv.Itoa(start))
