@@ -1,8 +1,7 @@
-package main
+package search
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/url"
 	"strconv"
@@ -40,6 +39,10 @@ type SearchPage struct {
 	SearchResults    []SearchResult
 	Pagination       Pagination
 	SearchCorrection SearchCorrection
+}
+
+type CaptchaPage struct {
+	SearchTerm string
 }
 
 func selectionEmpty(selection *goquery.Selection) bool {
@@ -207,9 +210,4 @@ func getOffsetFromHref(href string) (offset int, isSet bool) {
 	}
 
 	return offsetInt, true
-}
-
-func getSearchUrl(searchTerm string, start int) string {
-	escapedTerm := url.QueryEscape(searchTerm)
-	return fmt.Sprintf("https://google.com/search?q=%s&start=%d", escapedTerm, start)
 }

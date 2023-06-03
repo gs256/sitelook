@@ -11,3 +11,4 @@
 -   display website favicons
 -   add favicon
 -   captcha
+-   decode SearchPage.SearchTerm
