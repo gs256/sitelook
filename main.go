@@ -9,30 +9,31 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 )
 
-func apiSearchRoute(c *gin.Context) {
-	searchTerm := c.Query("q")
-	startQuery := c.Query("start")
+// func apiSearchRoute(c *gin.Context) {
+// 	searchTerm := c.Query("q")
+// 	startQuery := c.Query("start")
 
-	if len(searchTerm) == 0 {
-		c.Writer.WriteHeader(http.StatusBadRequest)
-		c.Writer.WriteString("empty search term")
-		return
-	}
+// 	if len(searchTerm) == 0 {
+// 		c.Writer.WriteHeader(http.StatusBadRequest)
+// 		c.Writer.WriteString("empty search term")
+// 		return
+// 	}
 
-	start, _ := strconv.Atoi(startQuery)
-	searchPage, err := parseSearchPage(searchTerm, start)
+// 	start, _ := strconv.Atoi(startQuery)
+// 	searchPage, err := parseSearchPage(searchTerm, start)
 
-	if err != nil {
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		log.Fatal(err)
-	}
+// 	if err != nil {
+// 		c.Writer.WriteHeader(http.StatusInternalServerError)
+// 		log.Fatal(err)
+// 	}
 
-	c.JSON(http.StatusOK, searchPage)
-}
+// 	c.JSON(http.StatusOK, searchPage)
+// }
 
 type SearchResultContext struct {
 	Url         string
@@ -182,6 +183,18 @@ func homeRoute(c *gin.Context) {
 	c.Redirect(http.StatusPermanentRedirect, "/search")
 }
 
+type CaptchaPageContext struct {
+	SearchRedirectUrl string
+}
+
+func createCaptchaPageContext(searchTerm string) CaptchaPageContext {
+	searchUrl := getSearchUrl(searchTerm, 0)
+
+	return CaptchaPageContext{
+		SearchRedirectUrl: searchUrl,
+	}
+}
+
 func searchRoute(c *gin.Context) {
 	searchTerm := c.Query("q")
 	searchType := c.Query("tbm")
@@ -194,11 +207,19 @@ func searchRoute(c *gin.Context) {
 	start, _ := strconv.Atoi(startQuery)
 
 	var searchPageContext SearchPageContext
+	searchUrl := getSearchUrl(searchTerm, start)
+	document, _, status := getDocument(searchUrl)
+
+	if status == http.StatusTooManyRequests {
+		captchaPageContext := createCaptchaPageContext(searchTerm)
+		c.HTML(http.StatusOK, "captcha-page.html", captchaPageContext)
+		return
+	}
 
 	if len(searchTerm) == 0 {
 		searchPageContext = createEmptySearchPageContext()
 	} else {
-		searchPage, err := parseSearchPage(searchTerm, start)
+		searchPage, err := parseSearchPage(document, searchTerm, start)
 		if err != nil {
 			c.Writer.WriteHeader(http.StatusInternalServerError)
 			log.Fatal(err)
@@ -217,10 +238,39 @@ func searchRoute(c *gin.Context) {
 	c.HTML(http.StatusOK, "search-page.html", searchPageContext)
 }
 
+func getDocument(url string) (document *goquery.Document, err error, status int) {
+	client := http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return nil, err, 0
+	}
+
+	req.Header = http.Header{
+		"Accept":          {"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"},
+		"Accept-Language": {"en-US,en;q=0.8"},
+		"User-Agent":      {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"},
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err, res.StatusCode
+	}
+
+	defer res.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err, res.StatusCode
+	}
+
+	return doc, nil, res.StatusCode
+}
+
 func main() {
 	engine := gin.Default()
 	engine.GET("/", homeRoute)
-	engine.GET("/api/search", apiSearchRoute)
+	// engine.GET("/api/search", apiSearchRoute)
 	engine.GET("/search", searchRoute)
 	engine.Static("./static", "./static/")
 	engine.LoadHTMLGlob("templates/*")

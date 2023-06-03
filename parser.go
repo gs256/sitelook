@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -41,39 +40,6 @@ type SearchPage struct {
 	SearchResults    []SearchResult
 	Pagination       Pagination
 	SearchCorrection SearchCorrection
-}
-
-func getDocument(url string) (*goquery.Document, error) {
-	client := http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header = http.Header{
-		"Accept":          {"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"},
-		"Accept-Language": {"en-US,en;q=0.8"},
-		"User-Agent":      {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"},
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer res.Body.Close()
-
-	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
-	}
-
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return doc, nil
 }
 
 func selectionEmpty(selection *goquery.Selection) bool {
@@ -189,14 +155,7 @@ func parseSearchInput(document *goquery.Document) string {
 	return searchInput.Text()
 }
 
-func parseSearchPage(searchTerm string, start int) (*SearchPage, error) {
-	searchUrl := getSearchUrl(searchTerm, start)
-	document, err := getDocument(searchUrl)
-
-	if err != nil {
-		return nil, err
-	}
-
+func parseSearchPage(document *goquery.Document, searchTerm string, start int) (*SearchPage, error) {
 	searchInput := parseSearchInput(document)
 	searchResults := parseSearchResults(document)
 	searchCorrection := parseSearchCorrection(document)
