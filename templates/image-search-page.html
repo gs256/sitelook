@@ -14,15 +14,20 @@
     <body>
         <div class="container-md my-3">
             {{template "search-page-navigation" .}}
-            <span></span>
 
-            {{range .ImageResults}}
-            <div class="card">
-                <span>{{.Title}}</span>
+            <div class="d-flex flex-row flex-wrap justify-content-center align-items-start">
+                {{range .ImageResults}}
+                <div class="card m-2" style="width: 13rem">
+                    <a href="{{.ImageLinkHref}}">
+                        <img src="{{.ImageSrc}}" class="card-img-top" alt="{{.Title}}" />
+                    </a>
+                    <div class="card-body">
+                        <h6 class="card-subtitle">{{.Title}}</h6>
+                        <a href="{{.TitleLinkHref}}" class="card-link">{{.UrlTitle}}</a>
+                    </div>
+                </div>
+                {{end}}
             </div>
-            {{end}}
-
-            <span></span>
 
             {{template "search-page-pagination" .Pagination}}
         </div>

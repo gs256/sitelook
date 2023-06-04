@@ -3,6 +3,7 @@ package search
 import (
 	"errors"
 	"log"
+	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -18,6 +19,15 @@ type ImageResult struct {
 type ImagesPage struct {
 	SearchTerm   string
 	ImageResults []ImageResult
+}
+
+func hrefFromQuery(url_ string) string {
+	u, err := url.Parse(url_)
+	if err != nil {
+		return ""
+	}
+	query := u.Query().Get("q")
+	return query
 }
 
 func parseImagesPage(document *goquery.Document) (ImagesPage, error) {
@@ -45,8 +55,9 @@ func parseImagesPage(document *goquery.Document) (ImagesPage, error) {
 			return
 		}
 
-		imageLinkHref := links.First().AttrOr("href", "#")
-		titleLinkHref := links.Last().AttrOr("href", "#")
+		// extracting image url from `<a href="/url?q=[image url]">...</a>`
+		imageLinkHref := hrefFromQuery(links.First().AttrOr("href", "#"))
+		titleLinkHref := hrefFromQuery(links.Last().AttrOr("href", "#"))
 
 		spans := tbody.Find("a span > span")
 		if spans.Length() != 2 {
