@@ -1,0 +1,29 @@
+{{define "search-page-pagination"}}
+<span></span>
+
+{{if .Visible}}
+<nav aria-label="pagination" class="mt-5">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {{or .PreviousLinkActive `disabled`}}">
+            <a class="page-link" href="{{.PreviousUrl}}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        {{range .PageLinks}}
+        <li class="page-item {{and .IsCurrent `active`}}">
+            <a class="page-link" href="{{.PageUrl}}">{{.PageNumber}}</a>
+        </li>
+        {{end}}
+
+        <li class="page-item {{or .NextLinkActive `disabled`}}">
+            <a class="page-link" href="{{.NextUrl}}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{{end}}
+
+<span></span>
+{{end}}
