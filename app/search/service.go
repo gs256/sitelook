@@ -127,7 +127,7 @@ func getDocument(url string) (document *goquery.Document, err error, status int)
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, err, res.StatusCode
+		return nil, err, 0
 	}
 
 	defer res.Body.Close()

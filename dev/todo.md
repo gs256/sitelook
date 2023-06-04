@@ -3,6 +3,7 @@
 -   captcha
 -   preserve current tbm query after pressing Search button
 -   trim start query when switching search type
+-   fix api
 
 ### Backlog
 
