@@ -21,6 +21,14 @@ type ImagesPage struct {
 }
 
 func parseImagesPage(document *goquery.Document) (ImagesPage, error) {
+	searchInput := findSingle(document.Selection, "input[name=\"q\"]")
+
+	if selectionEmpty(searchInput) {
+		return ImagesPage{}, errors.New("search input not found")
+	}
+
+	searchTerm := searchInput.AttrOr("value", "")
+
 	imageResults := make([]ImageResult, 0)
 
 	document.Find("tbody").Each(func(i int, tbody *goquery.Selection) {
@@ -60,13 +68,13 @@ func parseImagesPage(document *goquery.Document) (ImagesPage, error) {
 
 	if len(imageResults) == 0 {
 		return ImagesPage{
-			SearchTerm:   "FIXME",
+			SearchTerm:   searchTerm,
 			ImageResults: imageResults,
 		}, errors.New("page has no images or an error occured while parsing images")
 	}
 
 	return ImagesPage{
-		SearchTerm:   "FIXME",
+		SearchTerm:   searchTerm,
 		ImageResults: imageResults,
 	}, nil
 }

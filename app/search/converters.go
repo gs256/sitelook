@@ -67,8 +67,22 @@ func createPaginationContext(pagination Pagination, currentUrl *url.URL) Paginat
 	}
 }
 
+func getCurrentSearchType(query *url.Values) string {
+	tbm := query.Get("tbm")
+
+	if tbm == "isch" {
+		return SearchTypeImages
+	} else if tbm == "vid" {
+		return SearchTypeVideos
+	} else {
+		return SearchTypeAll
+	}
+}
+
 func createNavigationContext(currentUrl *url.URL) SearchNavigationContext {
 	query := currentUrl.Query()
+	searchType := getCurrentSearchType(&query)
+
 	query.Del("tbm")
 	allSearchHref := createHref(currentUrl, query)
 	query.Set("tbm", "isch")
@@ -77,9 +91,10 @@ func createNavigationContext(currentUrl *url.URL) SearchNavigationContext {
 	videoSearchHref := createHref(currentUrl, query)
 
 	return SearchNavigationContext{
-		AllSearchHref:   allSearchHref,
-		ImageSearchHref: imageSearchHref,
-		VideoSearchHref: videoSearchHref,
+		CurrentSearchType: searchType,
+		AllSearchHref:     allSearchHref,
+		ImageSearchHref:   imageSearchHref,
+		VideoSearchHref:   videoSearchHref,
 	}
 }
 
@@ -117,10 +132,10 @@ func createImagesPageContext(imagesPage ImagesPage, currentUrl *url.URL) ImagesP
 	}
 
 	return ImagesPageContext{
-		SearchTerm:       "FIXME",
+		SearchTerm:       imagesPage.SearchTerm,
 		ImageResults:     imageResults,
 		Pagination:       PaginationContext{},
-		Navigation:       SearchNavigationContext{},
+		Navigation:       createNavigationContext(currentUrl),
 		SearchCorrection: SearchCorrectionContext{},
 	}
 }

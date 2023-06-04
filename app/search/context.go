@@ -1,5 +1,11 @@
 package search
 
+const (
+	SearchTypeAll    = "All"
+	SearchTypeImages = "Images"
+	SearchTypeVideos = "Videos"
+)
+
 type SearchResultContext struct {
 	Url         string
 	Title       string
@@ -23,9 +29,10 @@ type PaginationContext struct {
 }
 
 type SearchNavigationContext struct {
-	AllSearchHref   string
-	ImageSearchHref string
-	VideoSearchHref string
+	CurrentSearchType string
+	AllSearchHref     string
+	ImageSearchHref   string
+	VideoSearchHref   string
 }
 
 type SearchCorrectionContext struct {
