@@ -42,7 +42,7 @@ func createPageLinkContext(pageLink PageLink, pageUrl string) PageLinkContext {
 	}
 }
 
-func createPaginationContext(pagination Pagination, currentUrl *url.URL) PaginationContext {
+func createPaginationContext(pagination MultiPagePagination, currentUrl *url.URL) MultiPagePaginationContext {
 	pageLinks := make([]PageLinkContext, len(pagination.PageLinks))
 	query := currentUrl.Query()
 
@@ -57,13 +57,32 @@ func createPaginationContext(pagination Pagination, currentUrl *url.URL) Paginat
 	query.Set("start", strconv.Itoa(pagination.NextOffset))
 	nextUrl := createHref(currentUrl, query)
 
-	return PaginationContext{
+	return MultiPagePaginationContext{
 		Visible:            len(pageLinks) > 0,
+		Type:               PaginationTypeMultiPage,
 		PageLinks:          pageLinks,
 		PreviousUrl:        previousUrl,
 		PreviousLinkActive: len(pageLinks) > 0 && !pageLinks[0].IsCurrent,
 		NextUrl:            nextUrl,
 		NextLinkActive:     len(pageLinks) > 0 && !pageLinks[len(pageLinks)-1].IsCurrent,
+	}
+}
+
+func createSinglePagePaginationContext(pagination SinglePagePagination, currentUrl *url.URL) SinglePagePaginationContext {
+	query := currentUrl.Query()
+	query.Set("start", strconv.Itoa(pagination.PreviousOffset))
+	previousLinkHref := createHref(currentUrl, query)
+	query.Set("start", strconv.Itoa(pagination.NextOffset))
+	nextLinkHref := createHref(currentUrl, query)
+
+	return SinglePagePaginationContext{
+		Visible:             true,
+		Type:                PaginationTypeSinglePage,
+		PreviousLinkPresent: pagination.PreviousLinkPresent,
+		PreviousUrl:         previousLinkHref,
+		NextLinkPresent:     pagination.NextLinkPresent,
+		NextUrl:             nextLinkHref,
+		CurrentTitle:        pagination.CurrentTitle,
 	}
 }
 
@@ -134,7 +153,7 @@ func createImagesPageContext(imagesPage ImagesPage, currentUrl *url.URL) ImagesP
 	return ImagesPageContext{
 		SearchTerm:       imagesPage.SearchTerm,
 		ImageResults:     imageResults,
-		Pagination:       PaginationContext{},
+		Pagination:       createSinglePagePaginationContext(imagesPage.Pagination, currentUrl),
 		Navigation:       createNavigationContext(currentUrl),
 		SearchCorrection: SearchCorrectionContext{},
 	}

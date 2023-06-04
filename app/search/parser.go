@@ -10,6 +10,11 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+const (
+	PaginationTypeMultiPage  = "MultiPagePagination"  // default google search pagination
+	PaginationTypeSinglePage = "SinglePagePagination" // non-js image search pagination
+)
+
 type SearchResult struct {
 	Url         string
 	Title       string
@@ -22,7 +27,8 @@ type PageLink struct {
 	IsCurrent  bool
 }
 
-type Pagination struct {
+type MultiPagePagination struct {
+	Type           string
 	PageLinks      []PageLink
 	PreviousOffset int
 	NextOffset     int
@@ -37,7 +43,7 @@ type SearchCorrection struct {
 type SearchPage struct {
 	SearchTerm       string
 	SearchResults    []SearchResult
-	Pagination       Pagination
+	Pagination       MultiPagePagination
 	SearchCorrection SearchCorrection
 }
 
@@ -45,11 +51,11 @@ type CaptchaPage struct {
 	SearchTerm string
 }
 
-func parsePagination(document *goquery.Document) (Pagination, error) {
+func parsePagination(document *goquery.Document) (MultiPagePagination, error) {
 	paginationDiv := findSingle(document.Selection, "div[role=\"navigation\"] table[role=\"presentation\"]")
 
 	if selectionEmpty(paginationDiv) {
-		return Pagination{}, errors.New("pagination container not found")
+		return MultiPagePagination{}, errors.New("pagination container not found")
 	}
 
 	pageLinks := []PageLink{}
@@ -83,7 +89,8 @@ func parsePagination(document *goquery.Document) (Pagination, error) {
 		}
 	})
 
-	return Pagination{
+	return MultiPagePagination{
+		Type:           PaginationTypeMultiPage,
 		PageLinks:      pageLinks,
 		PreviousOffset: previousPageOffset,
 		NextOffset:     nextPageOffset,

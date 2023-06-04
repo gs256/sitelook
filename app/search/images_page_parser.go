@@ -2,6 +2,7 @@ package search
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 
@@ -16,9 +17,18 @@ type ImageResult struct {
 	ImageLinkHref string
 }
 
+type SinglePagePagination struct {
+	PreviousLinkPresent bool
+	PreviousOffset      int
+	NextLinkPresent     bool
+	NextOffset          int
+	CurrentTitle        string
+}
+
 type ImagesPage struct {
 	SearchTerm   string
 	ImageResults []ImageResult
+	Pagination   SinglePagePagination
 }
 
 func hrefFromQuery(url_ string) string {
@@ -28,6 +38,55 @@ func hrefFromQuery(url_ string) string {
 	}
 	query := u.Query().Get("q")
 	return query
+}
+
+func parseSinglePagePagination(document *goquery.Document) (SinglePagePagination, error) {
+	paginationTable := findSingle(document.Selection, "body > table")
+
+	if selectionEmpty(paginationTable) {
+		return SinglePagePagination{}, errors.New("pagination not found")
+	}
+
+	tds := paginationTable.Find("td")
+
+	pagination := SinglePagePagination{
+		PreviousLinkPresent: false,
+		PreviousOffset:      0,
+		NextLinkPresent:     false,
+		NextOffset:          0,
+		CurrentTitle:        "",
+	}
+
+	if tds.Length() == 0 {
+		return SinglePagePagination{}, errors.New("pagination links not found")
+	} else {
+		containers := make([]*goquery.Selection, tds.Length())
+		tds.Each(func(i int, td *goquery.Selection) {
+			containers[i] = td
+		})
+
+		if len(containers) == 1 {
+			pagination.NextLinkPresent = true
+			pagination.NextOffset, _ = getOffsetFromHref(findSingle(tds, "a").AttrOr("href", "#"))
+		} else if len(containers) == 5 {
+			previousLink := findSingle(containers[1], "a")
+			pagination.PreviousLinkPresent = !selectionEmpty(previousLink)
+			pagination.PreviousOffset, _ = getOffsetFromHref(previousLink.AttrOr("href", "#"))
+			pagination.CurrentTitle = containers[2].Text()
+			nextLink := findSingle(containers[3], "a")
+			pagination.NextLinkPresent = !selectionEmpty(nextLink)
+			nextOffset, isSet := getOffsetFromHref(nextLink.AttrOr("href", "#"))
+			if isSet {
+				pagination.NextOffset = nextOffset
+			} else {
+				pagination.NextLinkPresent = false
+			}
+		} else {
+			return SinglePagePagination{}, errors.New(fmt.Sprintf("pagination has %d <td> elements (1 or 5 expected)", len(containers)))
+		}
+	}
+
+	return pagination, nil
 }
 
 func parseImagesPage(document *goquery.Document) (ImagesPage, error) {
@@ -84,8 +143,14 @@ func parseImagesPage(document *goquery.Document) (ImagesPage, error) {
 		}, errors.New("page has no images or an error occured while parsing images")
 	}
 
+	pagination, err := parseSinglePagePagination(document)
+	if err != nil {
+		log.Println(err)
+	}
+
 	return ImagesPage{
 		SearchTerm:   searchTerm,
 		ImageResults: imageResults,
+		Pagination:   pagination,
 	}, nil
 }

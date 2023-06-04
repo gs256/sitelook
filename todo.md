@@ -3,6 +3,8 @@
 -   image search pagination
 -   captcha
 -   preserve current tbm query after pressing Search button
+-   trim start query when switching search type
+-   parse first page link for image search
 
 ### Backlog
 

@@ -19,8 +19,9 @@ type PageLinkContext struct {
 	IsCurrent  bool
 }
 
-type PaginationContext struct {
+type MultiPagePaginationContext struct {
 	Visible            bool
+	Type               string
 	PageLinks          []PageLinkContext
 	PreviousUrl        string
 	PreviousLinkActive bool
@@ -45,7 +46,7 @@ type SearchCorrectionContext struct {
 type SearchPageContext struct {
 	SearchTerm       string
 	SearchResults    []SearchResultContext
-	Pagination       PaginationContext
+	Pagination       MultiPagePaginationContext
 	Navigation       SearchNavigationContext
 	SearchCorrection SearchCorrectionContext
 }
@@ -62,10 +63,20 @@ type ImageResultContext struct {
 	ImageLinkHref string
 }
 
+type SinglePagePaginationContext struct {
+	Visible             bool
+	Type                string
+	PreviousLinkPresent bool
+	PreviousUrl         string
+	NextLinkPresent     bool
+	NextUrl             string
+	CurrentTitle        string
+}
+
 type ImagesPageContext struct {
 	SearchTerm       string
 	ImageResults     []ImageResultContext
-	Pagination       PaginationContext
+	Pagination       SinglePagePaginationContext
 	Navigation       SearchNavigationContext
 	SearchCorrection SearchCorrectionContext
 }

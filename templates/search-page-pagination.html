@@ -2,6 +2,10 @@
 <span></span>
 
 {{if .Visible}}
+<span></span>
+
+{{if eq .Type `MultiPagePagination`}}
+
 <nav aria-label="pagination" class="mt-5">
     <ul class="pagination justify-content-center">
         <li class="page-item {{or .PreviousLinkActive `disabled`}}">
@@ -23,6 +27,44 @@
         </li>
     </ul>
 </nav>
+
+{{else if eq .Type `SinglePagePagination`}}
+
+<nav aria-label="pagination" class="mt-5">
+    <ul class="pagination justify-content-center">
+        <li class="page-item">
+            <a
+                class="page-link {{or .PreviousLinkPresent `disabled`}}"
+                href="{{.PreviousUrl}}"
+                aria-label="Previous"
+            >
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {{if .CurrentTitle}}
+        <li class="page-item">
+            <p class="page-link">{{.CurrentTitle}}</p>
+        </li>
+        {{else}}
+        <li class="page-item">
+            <p class="page-link">...</p>
+        </li>
+        {{end}}
+        <li class="page-item">
+            <a
+                class="page-link {{or .NextLinkPresent `disabled`}}"
+                href="{{.NextUrl}}"
+                aria-label="Next"
+            >
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+{{end}}
+
+<span></span>
 {{end}}
 
 <span></span>

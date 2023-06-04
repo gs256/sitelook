@@ -81,7 +81,7 @@ func ImageSearch(searchTerm string, offset int) (ImageSearchResponse, error) {
 		imagesPage, err := parseImagesPage(document)
 
 		if err != nil {
-			return ImageSearchResponse{Type: SearchResponseError, Status: status}, err
+			return ImageSearchResponse{Type: SearchResponseError, ImagesPage: &imagesPage, Status: status}, err
 		}
 
 		return ImageSearchResponse{Type: SearchResponsePage, ImagesPage: &imagesPage, Status: status}, nil
@@ -103,7 +103,7 @@ func getSearchUrl(searchTerm string, start int, searchType string) string {
 
 		// non-javascript version of image page
 		if searchType == "isch" {
-			query.Add("gbv", "1")
+			query.Set("gbv", "1")
 		}
 	}
 

@@ -46,7 +46,7 @@ func SearchRoute(c *gin.Context) {
 	if searchType == "isch" {
 		searchResponse, err := ImageSearch(searchTerm, start)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		imagesPageContext := createImagesPageContext(*searchResponse.ImagesPage, currentUrl)
 		c.HTML(http.StatusOK, "image-search-page", imagesPageContext)
