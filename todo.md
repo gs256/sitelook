@@ -1,10 +1,8 @@
 ## TODO
 
--   image search pagination
 -   captcha
 -   preserve current tbm query after pressing Search button
 -   trim start query when switching search type
--   parse first page link for image search
 
 ### Backlog
 
@@ -22,3 +20,4 @@
 -   parse quick answers e.g. `how long is an hour`
 -   nested search results (now they are siblings)
 -   search suggestions
+-   consider parsing non-js version of "All" search page
