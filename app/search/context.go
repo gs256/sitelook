@@ -64,13 +64,15 @@ type ImageResultContext struct {
 }
 
 type SinglePagePaginationContext struct {
-	Visible             bool
-	Type                string
-	PreviousLinkPresent bool
-	PreviousUrl         string
-	NextLinkPresent     bool
-	NextUrl             string
-	CurrentTitle        string
+	Visible              bool
+	Type                 string
+	FirstPageLinkPresent bool
+	FirstPageUrl         string
+	PreviousLinkPresent  bool
+	PreviousUrl          string
+	NextLinkPresent      bool
+	NextUrl              string
+	CurrentTitle         string
 }
 
 type ImagesPageContext struct {

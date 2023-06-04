@@ -74,15 +74,19 @@ func createSinglePagePaginationContext(pagination SinglePagePagination, currentU
 	previousLinkHref := createHref(currentUrl, query)
 	query.Set("start", strconv.Itoa(pagination.NextOffset))
 	nextLinkHref := createHref(currentUrl, query)
+	query.Set("start", "0")
+	firstPageLinkHref := createHref(currentUrl, query)
 
 	return SinglePagePaginationContext{
-		Visible:             true,
-		Type:                PaginationTypeSinglePage,
-		PreviousLinkPresent: pagination.PreviousLinkPresent,
-		PreviousUrl:         previousLinkHref,
-		NextLinkPresent:     pagination.NextLinkPresent,
-		NextUrl:             nextLinkHref,
-		CurrentTitle:        pagination.CurrentTitle,
+		Visible:              true,
+		Type:                 PaginationTypeSinglePage,
+		FirstPageLinkPresent: pagination.PreviousLinkPresent,
+		FirstPageUrl:         firstPageLinkHref,
+		PreviousLinkPresent:  pagination.PreviousLinkPresent,
+		PreviousUrl:          previousLinkHref,
+		NextLinkPresent:      pagination.NextLinkPresent,
+		NextUrl:              nextLinkHref,
+		CurrentTitle:         pagination.CurrentTitle,
 	}
 }
 

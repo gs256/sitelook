@@ -41,13 +41,20 @@
                 <span aria-hidden="true">&laquo;</span>
             </a>
         </li>
+        {{if .FirstPageLinkPresent}}
+        <li class="page-item">
+            <a class="page-link" href="{{.FirstPageUrl}}">1</a>
+        </li>
+        {{end}}
+        <!--  -->
         {{if .CurrentTitle}}
         <li class="page-item">
-            <p class="page-link">{{.CurrentTitle}}</p>
+            <p class="page-link active">{{.CurrentTitle}}</p>
         </li>
         {{else}}
+        <!--  -->
         <li class="page-item">
-            <p class="page-link">...</p>
+            <p class="page-link active">1</p>
         </li>
         {{end}}
         <li class="page-item">
