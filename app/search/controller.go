@@ -1,7 +1,6 @@
 package search
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -40,13 +39,22 @@ func createHref(url *url.URL, query url.Values) string {
 func SearchRoute(c *gin.Context) {
 	searchTerm, _ := url.QueryUnescape(c.Query("q"))
 	searchType := c.Query("tbm")
-	if len(searchType) > 0 {
-		c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("https://google.com/search?q=%s&tbm=%s", searchTerm, searchType))
-		return
-	}
-
 	startQuery := c.Query("start")
 	start, _ := strconv.Atoi(startQuery)
+	currentUrl := c.Request.URL
+
+	if searchType == "isch" {
+		searchResponse, err := ImageSearch(searchTerm, start)
+		if err != nil {
+			log.Fatal(err)
+		}
+		imagesPageContext := createImagesPageContext(*searchResponse.ImagesPage, currentUrl)
+		c.HTML(http.StatusOK, "image-search-page", imagesPageContext)
+		return
+	} else if len(searchType) > 0 {
+		// c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("https://google.com/search?q=%s&tbm=%s", searchTerm, searchType))
+		return
+	}
 
 	searchResponse, err := Search(searchTerm, start)
 
@@ -57,7 +65,6 @@ func SearchRoute(c *gin.Context) {
 	if searchResponse.Type == SearchResponseError {
 		log.Printf("search response error with code: %d", searchResponse.Status)
 	} else if searchResponse.Type == SearchResponsePage {
-		currentUrl := c.Request.URL
 		searchPageContext := createSearchPageContext(*searchResponse.SearchPage, currentUrl)
 		c.HTML(http.StatusOK, "search-page", searchPageContext)
 	} else if searchResponse.Type == SearchResponseCaptcha {

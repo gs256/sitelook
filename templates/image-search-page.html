@@ -1,0 +1,97 @@
+{{define "image-search-page"}}
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        {{template "bootstrap-include"}}
+        <title>{{.SearchTerm}}</title>
+        {{template "global-include"}}
+        <link rel="stylesheet" href="/static/css/search-page.css" />
+    </head>
+    <body>
+        <div class="container-md my-3">
+            <span class="h4 text-primary-emphasis">sitelook ⌕</span>
+            <form action="/search" method="get">
+                <div class="input-group mt-3">
+                    <input
+                        name="q"
+                        type="text"
+                        class="form-control"
+                        placeholder=""
+                        aria-label="Recipient's username"
+                        aria-describedby="button-addon2"
+                        value="{{.SearchTerm}}"
+                    />
+                    <button class="btn btn-primary" type="submit" id="button-addon2">Search</button>
+                </div>
+            </form>
+
+            <ul class="nav nav-pills my-3">
+                <li class="nav-item">
+                    <a
+                        class="nav-link active"
+                        aria-current="page"
+                        href="{{.Navigation.AllSearchHref}}"
+                        >All</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{.Navigation.ImageSearchHref}}">Images</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{.Navigation.VideoSearchHref}}">Videos</a>
+                </li>
+            </ul>
+
+            {{if .SearchCorrection.Present}}
+            <span>{{.SearchCorrection.Title}}</span>
+            <a href="{{.SearchCorrection.CorrectionHref}}"
+                >{{.SearchCorrection.CorrectSearchTerm}}</a
+            >
+            {{end}}
+
+            <span></span>
+
+            {{range .ImageResults}}
+            <div class="card">
+                <span>{{.Title}}</span>
+            </div>
+            {{end}}
+
+            <span></span>
+
+            {{if .Pagination.Visible}}
+            <nav aria-label="pagination" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{or .Pagination.PreviousLinkActive `disabled`}}">
+                        <a
+                            class="page-link"
+                            href="{{.Pagination.PreviousUrl}}"
+                            aria-label="Previous"
+                        >
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    {{range .Pagination.PageLinks}}
+                    <li class="page-item {{and .IsCurrent `active`}}">
+                        <a class="page-link" href="{{.PageUrl}}">{{.PageNumber}}</a>
+                    </li>
+                    {{end}}
+
+                    <li class="page-item {{or .Pagination.NextLinkActive `disabled`}}">
+                        <a class="page-link" href="{{.Pagination.NextUrl}}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {{end}}
+        </div>
+    </body>
+</html>
+
+{{end}}

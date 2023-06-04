@@ -46,3 +46,19 @@ type SearchPageContext struct {
 type CaptchaPageContext struct {
 	SearchRedirectUrl string
 }
+
+type ImageResultContext struct {
+	Title         string
+	UrlTitle      string
+	ImageSrc      string
+	TitleLinkHref string
+	ImageLinkHref string
+}
+
+type ImagesPageContext struct {
+	SearchTerm       string
+	ImageResults     []ImageResultContext
+	Pagination       PaginationContext
+	Navigation       SearchNavigationContext
+	SearchCorrection SearchCorrectionContext
+}

@@ -99,12 +99,38 @@ func createSearchPageContext(searchPage SearchPage, currentUrl *url.URL) SearchP
 	}
 }
 
+func createImageResultContext(imageResult ImageResult) ImageResultContext {
+	return ImageResultContext{
+		Title:         imageResult.Title,
+		UrlTitle:      imageResult.UrlTitle,
+		ImageSrc:      imageResult.ImageSrc,
+		TitleLinkHref: imageResult.TitleLinkHref,
+		ImageLinkHref: imageResult.ImageLinkHref,
+	}
+}
+
+func createImagesPageContext(imagesPage ImagesPage, currentUrl *url.URL) ImagesPageContext {
+	imageResults := make([]ImageResultContext, len(imagesPage.ImageResults))
+
+	for i := 0; i < len(imagesPage.ImageResults); i++ {
+		imageResults[i] = createImageResultContext(imagesPage.ImageResults[i])
+	}
+
+	return ImagesPageContext{
+		SearchTerm:       "FIXME",
+		ImageResults:     imageResults,
+		Pagination:       PaginationContext{},
+		Navigation:       SearchNavigationContext{},
+		SearchCorrection: SearchCorrectionContext{},
+	}
+}
+
 func createEmptySearchPageContext() SearchPageContext {
 	return SearchPageContext{}
 }
 
 func createCaptchaPageContext(captchaPage CaptchaPage) CaptchaPageContext {
-	searchUrl := getSearchUrl(captchaPage.SearchTerm, 0)
+	searchUrl := getSearchUrl(captchaPage.SearchTerm, 0, "")
 
 	return CaptchaPageContext{
 		SearchRedirectUrl: searchUrl,
@@ -119,4 +145,11 @@ func createCaptchaPage(searchTerm string) CaptchaPage {
 
 func createEmptySearchPage() SearchPage {
 	return SearchPage{}
+}
+
+func createEmptyImagesPage() ImagesPage {
+	return ImagesPage{
+		SearchTerm:   "",
+		ImageResults: []ImageResult{},
+	}
 }

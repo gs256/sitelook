@@ -21,8 +21,15 @@ type SearchResponse struct {
 	SearchPage *SearchPage
 }
 
-func Search(searchTerm string, offset int) (response SearchResponse, err error) {
-	searchUrl := getSearchUrl(searchTerm, offset)
+type ImageSearchResponse struct {
+	Type       int
+	Status     int
+	Captcha    *CaptchaPage
+	ImagesPage *ImagesPage
+}
+
+func Search(searchTerm string, offset int) (SearchResponse, error) {
+	searchUrl := getSearchUrl(searchTerm, offset, "")
 	document, err, status := getDocument(searchUrl)
 
 	if err != nil {
@@ -51,7 +58,37 @@ func Search(searchTerm string, offset int) (response SearchResponse, err error) 
 	}
 }
 
-func getSearchUrl(searchTerm string, start int) string {
+func ImageSearch(searchTerm string, offset int) (ImageSearchResponse, error) {
+	searchUrl := getSearchUrl(searchTerm, offset, "isch")
+	document, err, status := getDocument(searchUrl)
+
+	if err != nil {
+		return ImageSearchResponse{Type: SearchResponseError, Status: 0}, err
+	}
+
+	if status != http.StatusOK {
+		if status == http.StatusTooManyRequests {
+			captchaPage := createCaptchaPage(searchTerm)
+			return ImageSearchResponse{Type: SearchResponseCaptcha, Captcha: &captchaPage, Status: status}, err
+		}
+		return ImageSearchResponse{Type: SearchResponseError, Status: status}, nil
+	}
+
+	if len(searchTerm) == 0 {
+		imagesPage := createEmptyImagesPage()
+		return ImageSearchResponse{Type: SearchResponsePage, ImagesPage: &imagesPage, Status: status}, nil
+	} else {
+		imagesPage, err := parseImagesPage(document)
+
+		if err != nil {
+			return ImageSearchResponse{Type: SearchResponseError, Status: status}, err
+		}
+
+		return ImageSearchResponse{Type: SearchResponsePage, ImagesPage: &imagesPage, Status: status}, nil
+	}
+}
+
+func getSearchUrl(searchTerm string, start int, searchType string) string {
 	searchUrl, _ := url.Parse("https://google.com/search")
 	query := searchUrl.Query()
 
@@ -59,6 +96,15 @@ func getSearchUrl(searchTerm string, start int) string {
 
 	if start > 0 {
 		query.Add("start", strconv.Itoa(start))
+	}
+
+	if len(searchType) > 0 {
+		query.Add("tbm", searchType)
+
+		// non-javascript version of image page
+		if searchType == "isch" {
+			query.Add("gbv", "1")
+		}
 	}
 
 	searchUrl.RawQuery = query.Encode()
