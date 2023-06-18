@@ -34,7 +34,7 @@ You can find all upcoming and considered features in the project's [todo.md](dev
 
 ### Captcha Issue
 
-Google sometimes requires captcha to make a search request. Solving captchas is not implemented yet but it is a high priority task. For now, you will be offered to proceed with the Google Search.
+Google sometimes requires captcha to make a search request. Solving captchas on the frontend is not implemented and probably won't be implemented since I'm not sure if it is even possible. Instead you will be offered to proceed with the Google Search.
 
 ![captcha-error-example](dev/captcha-error-example.png)
 
