@@ -3,15 +3,12 @@
 
 <form action="/search" method="get">
     <div class="input-group mt-3">
-        <input
-            name="q"
-            type="text"
-            class="form-control"
-            placeholder=""
-            aria-label="Recipient's username"
-            aria-describedby="button-addon2"
-            value="{{.SearchTerm}}"
-        />
+        <input name="q" type="text" class="form-control" value="{{.SearchTerm}}" />
+
+        {{if .Navigation.SearchQueryParam}}
+        <input name="tbm" type="hidden" value="{{.Navigation.SearchQueryParam}}" />
+        {{end}}
+
         <button class="btn btn-primary" type="submit" id="button-addon2">Search</button>
     </div>
 </form>

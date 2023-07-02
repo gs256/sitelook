@@ -31,6 +31,7 @@ type MultiPagePaginationContext struct {
 
 type SearchNavigationContext struct {
 	CurrentSearchType string
+	SearchQueryParam  string
 	AllSearchHref     string
 	ImageSearchHref   string
 	VideoSearchHref   string

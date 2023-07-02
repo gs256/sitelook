@@ -90,12 +90,10 @@ func createSinglePagePaginationContext(pagination SinglePagePagination, currentU
 	}
 }
 
-func getCurrentSearchType(query *url.Values) string {
-	tbm := query.Get("tbm")
-
-	if tbm == "isch" {
+func getCurrentSearchType(queryParam string) string {
+	if queryParam == "isch" {
 		return SearchTypeImages
-	} else if tbm == "vid" {
+	} else if queryParam == "vid" {
 		return SearchTypeVideos
 	} else {
 		return SearchTypeAll
@@ -104,7 +102,8 @@ func getCurrentSearchType(query *url.Values) string {
 
 func createNavigationContext(currentUrl *url.URL) SearchNavigationContext {
 	query := currentUrl.Query()
-	searchType := getCurrentSearchType(&query)
+	tbm := query.Get("tbm")
+	searchType := getCurrentSearchType(tbm)
 
 	query.Del("tbm")
 	allSearchHref := createHref(currentUrl, query)
@@ -115,6 +114,7 @@ func createNavigationContext(currentUrl *url.URL) SearchNavigationContext {
 
 	return SearchNavigationContext{
 		CurrentSearchType: searchType,
+		SearchQueryParam:  tbm,
 		AllSearchHref:     allSearchHref,
 		ImageSearchHref:   imageSearchHref,
 		VideoSearchHref:   videoSearchHref,
