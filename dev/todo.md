@@ -1,7 +1,7 @@
 ## TODO
 
--   trim start query when switching search type
 -   fix api
+-   video search
 
 ### Backlog
 

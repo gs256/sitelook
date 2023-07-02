@@ -105,6 +105,7 @@ func createNavigationContext(currentUrl *url.URL) SearchNavigationContext {
 	tbm := query.Get("tbm")
 	searchType := getCurrentSearchType(tbm)
 
+	query.Del("start")
 	query.Del("tbm")
 	allSearchHref := createHref(currentUrl, query)
 	query.Set("tbm", "isch")
