@@ -64,6 +64,14 @@ type ImageResultContext struct {
 	ImageLinkHref string
 }
 
+type VideoResultContext struct {
+	Title         string
+	UrlTitle      string
+	ImageSrc      string
+	TitleLinkHref string
+	Description   string
+}
+
 type SinglePagePaginationContext struct {
 	Visible              bool
 	Type                 string
@@ -79,6 +87,14 @@ type SinglePagePaginationContext struct {
 type ImagesPageContext struct {
 	SearchTerm       string
 	ImageResults     []ImageResultContext
+	Pagination       SinglePagePaginationContext
+	Navigation       SearchNavigationContext
+	SearchCorrection SearchCorrectionContext
+}
+
+type VideosPageContext struct {
+	SearchTerm       string
+	VideoResults     []VideoResultContext
 	Pagination       SinglePagePaginationContext
 	Navigation       SearchNavigationContext
 	SearchCorrection SearchCorrectionContext

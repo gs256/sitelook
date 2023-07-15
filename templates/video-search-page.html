@@ -11,62 +11,42 @@
         {{template "sitelook-title" .}}
         <!--  -->
         {{template "global-include"}}
-        <link rel="stylesheet" href="/static/css/image-page.css" />
+        <link rel="stylesheet" href="/static/css/search-page.css" />
     </head>
     <body>
         <div class="container-md my-3">
             {{template "search-page-navigation" .}}
 
-            <div class="card my-3">
-                <div class="card-header">
-                    <a href="#" class="link-underline link-underline-opacity-0">
-                        <span class="h5">Title</span>
-                    </a>
-                    <br />
-                    <a
-                        href="#"
-                        class="link link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-                        >Url title</a
-                    >
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Description</p>
-                </div>
-            </div>
-
+            <!--  -->
+            {{range .VideoResults}}
             <div class="card mb-3">
                 <div class="row g-0">
                     <div class="col-md-2 d-flex align-items-center justify-content-center">
-                        <img
-                            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXVsDbuHEROt7EaBOhVLJgK1r61qvvPpdjLJIDTqEHNG8OkMHo2r221p8&s"
-                            class="rounded"
-                            alt=""
-                        />
+                        <img src="{{.ImageSrc}}" class="rounded" alt="" />
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
-                            <a href="#" class="link-underline link-underline-opacity-0">
-                                <h5 class="card-title">Dawg Skull Emoji GIF - Tenor</h5>
+                            <a
+                                href="{{.TitleLinkHref}}"
+                                class="link-underline link-underline-opacity-0"
+                            >
+                                <h5 class="card-title">{{.Title}}</h5>
                             </a>
                             <div style="margin-top: -0.5rem; margin-bottom: 0.5rem">
-                                <a href="#" class="link-underline link-underline-opacity-0">
-                                    <small class=""
-                                        >tenor.com/view/dawg-skull-emoji-gif-24661581</small
-                                    >
+                                <a
+                                    href="{{.TitleLinkHref}}"
+                                    class="link-underline link-underline-opacity-0"
+                                >
+                                    <small class="">{{.UrlTitle}}</small>
                                 </a>
                             </div>
-
-                            <div class="BNeawe s3v9rd AP7Wnd">
-                                <span class="r0bn4c rQMQod">Jan 26, 2022</span>
-                                <span class="r0bn4c rQMQod"> · </span>The perfect Dawg Skull Emoji
-                                Animated GIF for your conversation. Discover and Share the best
-                                ...<br />Duration: <span class="r0bn4c rQMQod">0:07</span
-                                ><br />Posted: <span class="r0bn4c rQMQod">Jan 26, 2022</span>
-                            </div>
+                            <div>{{.Description}}</div>
                         </div>
                     </div>
                 </div>
             </div>
+            {{end}}
+            <!--  -->
 
             {{template "search-page-pagination" .Pagination}}
         </div>

@@ -52,12 +52,12 @@ func SearchRoute(c *gin.Context) {
 		c.HTML(http.StatusOK, "image-search-page", imagesPageContext)
 		return
 	} else if searchType == "vid" {
-		searchResponse, err := ImageSearch(searchTerm, start)
+		searchResponse, err := VideoSearch(searchTerm, start)
 		if err != nil {
 			log.Println(err)
 		}
-		imagesPageContext := createImagesPageContext(*searchResponse.ImagesPage, currentUrl)
-		c.HTML(http.StatusOK, "video-search-page", imagesPageContext)
+		videosPageContext := createVideosPageContext(*searchResponse.VideosPage, currentUrl)
+		c.HTML(http.StatusOK, "video-search-page", videosPageContext)
 		return
 	} else if len(searchType) > 0 {
 		// c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("https://google.com/search?q=%s&tbm=%s", searchTerm, searchType))

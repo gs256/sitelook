@@ -28,6 +28,13 @@ type ImageSearchResponse struct {
 	ImagesPage *ImagesPage
 }
 
+type VideoSearchResponse struct {
+	Type       int
+	Status     int
+	Captcha    *CaptchaPage
+	VideosPage *VideosPage
+}
+
 func Search(searchTerm string, offset int) (SearchResponse, error) {
 	searchUrl := getSearchUrl(searchTerm, offset, "")
 	document, err, status := getDocument(searchUrl)
@@ -88,6 +95,36 @@ func ImageSearch(searchTerm string, offset int) (ImageSearchResponse, error) {
 	}
 }
 
+func VideoSearch(searchTerm string, offset int) (VideoSearchResponse, error) {
+	searchUrl := getSearchUrl(searchTerm, offset, "vid")
+	document, err, status := getDocument(searchUrl)
+
+	if err != nil {
+		return VideoSearchResponse{Type: SearchResponseError, Status: 0}, err
+	}
+
+	if status != http.StatusOK {
+		if status == http.StatusTooManyRequests {
+			captchaPage := createCaptchaPage(searchTerm)
+			return VideoSearchResponse{Type: SearchResponseCaptcha, Captcha: &captchaPage, Status: status}, err
+		}
+		return VideoSearchResponse{Type: SearchResponseError, Status: status}, nil
+	}
+
+	if len(searchTerm) == 0 {
+		videosPage := createEmptyVideosPage()
+		return VideoSearchResponse{Type: SearchResponsePage, VideosPage: &videosPage, Status: status}, nil
+	} else {
+		videosPage, err := parseVideosPage(document)
+
+		if err != nil {
+			return VideoSearchResponse{Type: SearchResponseError, VideosPage: &videosPage, Status: status}, err
+		}
+
+		return VideoSearchResponse{Type: SearchResponsePage, VideosPage: &videosPage, Status: status}, nil
+	}
+}
+
 func getSearchUrl(searchTerm string, start int, searchType string) string {
 	searchUrl, _ := url.Parse("https://google.com/search")
 	query := searchUrl.Query()
@@ -101,8 +138,8 @@ func getSearchUrl(searchTerm string, start int, searchType string) string {
 	if len(searchType) > 0 {
 		query.Add("tbm", searchType)
 
-		// non-javascript version of image page
-		if searchType == "isch" {
+		// non-javascript version of image and video page
+		if searchType == "isch" || searchType == "vid" {
 			query.Set("gbv", "1")
 		}
 	}

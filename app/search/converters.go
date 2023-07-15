@@ -19,12 +19,24 @@ func createSearchCorrectionContext(searchCorrection SearchCorrection, currentUrl
 	}
 }
 
+func makeUrlTitle(itemUrl string) (string, error) {
+	// u, err := url.Parse(itemUrl)
+	// if err != nil {
+	// 	return "", err
+	// }
+	// host := u.Host
+	// path := u.Path
+	// host = strings.TrimPrefix(host, "www.")
+	// urlTitle := strings.TrimRight(host+path, "/")
+	// return urlTitle, nil
+	itemUrl = strings.TrimPrefix(itemUrl, "https://")
+	itemUrl = strings.TrimPrefix(itemUrl, "http://")
+	itemUrl = strings.TrimPrefix(itemUrl, "www.")
+	return itemUrl, nil
+}
+
 func createSearchResultContext(searchResult SearchResult) SearchResultContext {
-	u, _ := url.Parse(searchResult.Url)
-	host := u.Host
-	path := u.Path
-	host = strings.TrimPrefix(host, "www.")
-	urlTitle := strings.TrimRight(host+path, "/")
+	urlTitle, _ := makeUrlTitle(searchResult.Url)
 
 	return SearchResultContext{
 		Url:         searchResult.Url,
@@ -148,6 +160,18 @@ func createImageResultContext(imageResult ImageResult) ImageResultContext {
 	}
 }
 
+func createVideoResultContext(videoResult VideoResult) VideoResultContext {
+	urlTitle, _ := makeUrlTitle(videoResult.TitleLinkHref)
+
+	return VideoResultContext{
+		Title:         videoResult.Title,
+		UrlTitle:      urlTitle,
+		ImageSrc:      videoResult.ImageSrc,
+		TitleLinkHref: videoResult.TitleLinkHref,
+		Description:   videoResult.Description,
+	}
+}
+
 func createImagesPageContext(imagesPage ImagesPage, currentUrl *url.URL) ImagesPageContext {
 	imageResults := make([]ImageResultContext, len(imagesPage.ImageResults))
 
@@ -159,6 +183,22 @@ func createImagesPageContext(imagesPage ImagesPage, currentUrl *url.URL) ImagesP
 		SearchTerm:       imagesPage.SearchTerm,
 		ImageResults:     imageResults,
 		Pagination:       createSinglePagePaginationContext(imagesPage.Pagination, currentUrl),
+		Navigation:       createNavigationContext(currentUrl),
+		SearchCorrection: SearchCorrectionContext{},
+	}
+}
+
+func createVideosPageContext(videosPage VideosPage, currentUrl *url.URL) VideosPageContext {
+	videoResults := make([]VideoResultContext, len(videosPage.VideoResults))
+
+	for i := 0; i < len(videosPage.VideoResults); i++ {
+		videoResults[i] = createVideoResultContext(videosPage.VideoResults[i])
+	}
+
+	return VideosPageContext{
+		SearchTerm:       videosPage.SearchTerm,
+		VideoResults:     videoResults,
+		Pagination:       createSinglePagePaginationContext(videosPage.Pagination, currentUrl),
 		Navigation:       createNavigationContext(currentUrl),
 		SearchCorrection: SearchCorrectionContext{},
 	}
@@ -190,5 +230,14 @@ func createEmptyImagesPage() ImagesPage {
 	return ImagesPage{
 		SearchTerm:   "",
 		ImageResults: []ImageResult{},
+		Pagination:   SinglePagePagination{},
+	}
+}
+
+func createEmptyVideosPage() VideosPage {
+	return VideosPage{
+		SearchTerm:   "",
+		VideoResults: []VideoResult{},
+		Pagination:   SinglePagePagination{},
 	}
 }
