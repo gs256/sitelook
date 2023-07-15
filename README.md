@@ -22,7 +22,7 @@ Application parses Google search page and renders a new page with the results. I
 
 ### Search Filters
 
-So far `All` and `Images` search filters are supported. Implementation of `Videos` filter is underway. Other filters may or may not be implemented.
+Supported search filters are `All`, `Images` and `Videos`. Other filters most likely won't be implemented.
 
 ![image-search-example](dev/image-search-example.png)
 

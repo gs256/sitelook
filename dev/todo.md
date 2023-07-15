@@ -1,8 +1,7 @@
 ## TODO
 
 -   fix api
--   video search
--   tab title when no search term
+-   fix tab title when no search term
 -   fix pagination on video search page
 -   keep video result descriptions' markup
 -   unescape unicode in `All` search results' url-titles
