@@ -2,6 +2,7 @@
 
 -   fix api
 -   video search
+-   tab title when no search term
 
 ### Backlog
 
@@ -14,6 +15,7 @@
 
 ### Maybe
 
+-   specify country/language
 -   display favicons of search results
 -   parse filetype label next to search result title e.g. pdf
 -   parse quick answers e.g. `how long is an hour`
