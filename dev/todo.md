@@ -3,7 +3,6 @@
 -   fix api
 -   fix pagination on video search page
 -   keep video result descriptions' markup
--   unescape unicode in `All` search results' url-titles
 
 ### Backlog
 

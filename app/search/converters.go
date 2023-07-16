@@ -20,15 +20,7 @@ func createSearchCorrectionContext(searchCorrection SearchCorrection, currentUrl
 }
 
 func makeUrlTitle(itemUrl string) (string, error) {
-	// u, err := url.Parse(itemUrl)
-	// if err != nil {
-	// 	return "", err
-	// }
-	// host := u.Host
-	// path := u.Path
-	// host = strings.TrimPrefix(host, "www.")
-	// urlTitle := strings.TrimRight(host+path, "/")
-	// return urlTitle, nil
+	itemUrl, _ = url.PathUnescape(itemUrl)
 	itemUrl = strings.TrimPrefix(itemUrl, "https://")
 	itemUrl = strings.TrimPrefix(itemUrl, "http://")
 	itemUrl = strings.TrimPrefix(itemUrl, "www.")
