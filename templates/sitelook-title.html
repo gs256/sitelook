@@ -1,3 +1,11 @@
 {{define "sitelook-title"}}
+<!--  -->
+
+{{if .SearchTerm}}
 <title>{{.SearchTerm}} - sitelook</title>
+{{else}}
+<title>sitelook</title>
+{{end}}
+
+<!--  -->
 {{end}}

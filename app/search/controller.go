@@ -43,6 +43,11 @@ func SearchRoute(c *gin.Context) {
 	start, _ := strconv.Atoi(startQuery)
 	currentUrl := c.Request.URL
 
+	if len(searchTerm) == 0 {
+		c.Redirect(http.StatusPermanentRedirect, "/")
+		return
+	}
+
 	if searchType == "isch" {
 		searchResponse, err := ImageSearch(searchTerm, start)
 		if err != nil {

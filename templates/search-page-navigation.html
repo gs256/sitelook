@@ -1,17 +1,8 @@
 {{define "search-page-navigation"}}
-<span class="h4 text-primary-emphasis">sitelook ⌕</span>
 
-<form action="/search" method="get">
-    <div class="input-group mt-3">
-        <input name="q" type="text" class="form-control" value="{{.SearchTerm}}" />
-
-        {{if .Navigation.SearchQueryParam}}
-        <input name="tbm" type="hidden" value="{{.Navigation.SearchQueryParam}}" />
-        {{end}}
-
-        <button class="btn btn-primary" type="submit" id="button-addon2">Search</button>
-    </div>
-</form>
+<!--  -->
+{{template "search-page-input" .}}
+<!--  -->
 
 <ul class="nav nav-pills my-3">
     <li class="nav-item">

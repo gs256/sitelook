@@ -1,3 +1,8 @@
+/* TODO: remove later */
 .container-md {
+    max-width: 960px;
+}
+
+.search-result-container {
     max-width: 960px;
 }

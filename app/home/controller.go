@@ -7,5 +7,5 @@ import (
 )
 
 func HomeRoute(c *gin.Context) {
-	c.Redirect(http.StatusPermanentRedirect, "/search")
+	c.HTML(http.StatusOK, "home-page", nil)
 }
