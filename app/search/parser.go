@@ -191,6 +191,16 @@ func getOffsetFromSelection(selection *goquery.Selection) (offset int, isSet boo
 	return getOffsetFromHref(href)
 }
 
+func getOffsetFromLink(linkElement *goquery.Selection) (offset int, isSet bool) {
+	href, set := linkElement.Attr("href")
+
+	if !set {
+		return 0, false
+	}
+
+	return getOffsetFromHref(href)
+}
+
 func getOffsetFromHref(href string) (offset int, isSet bool) {
 	hrefUrl, err := url.Parse(href)
 	if err != nil {

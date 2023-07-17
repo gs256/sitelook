@@ -1,8 +1,8 @@
 ## TODO
 
 -   fix api
--   fix pagination on video search page
 -   keep video result descriptions' markup
+-   fix video page thumbnail styles
 
 ### Backlog
 

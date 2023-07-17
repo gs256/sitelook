@@ -40,7 +40,7 @@ func hrefFromQuery(url_ string) string {
 	return query
 }
 
-func parseSinglePagePagination(document *goquery.Document) (SinglePagePagination, error) {
+func parseImagePagePagination(document *goquery.Document) (SinglePagePagination, error) {
 	paginationTable := findSingle(document.Selection, "body > table")
 
 	if selectionEmpty(paginationTable) {
@@ -84,6 +84,76 @@ func parseSinglePagePagination(document *goquery.Document) (SinglePagePagination
 		} else {
 			return SinglePagePagination{}, errors.New(fmt.Sprintf("pagination has %d <td> elements (1 or 5 expected)", len(containers)))
 		}
+	}
+
+	return pagination, nil
+}
+
+func selectionToArray(selection *goquery.Selection) []*goquery.Selection {
+	elements := make([]*goquery.Selection, selection.Length())
+	selection.Each(func(i int, element *goquery.Selection) {
+		elements[i] = element
+	})
+	return elements
+}
+
+func parseVideoPagePagination(document *goquery.Document) (SinglePagePagination, error) {
+	footer := findSingle(document.Selection, "footer > div")
+	paginationDiv := findSingle(footer, "div > a").Parent()
+
+	if selectionEmpty(paginationDiv) {
+		return SinglePagePagination{}, errors.New("pagination not found")
+	}
+
+	pagination := SinglePagePagination{
+		PreviousLinkPresent: false,
+		PreviousOffset:      0,
+		NextLinkPresent:     false,
+		NextOffset:          0,
+		CurrentTitle:        "",
+	}
+
+	links := selectionToArray(paginationDiv.Find("a"))
+	span := findSingle(paginationDiv, "div > span")
+
+	if len(links) == 0 {
+		return pagination, errors.New("pagination links not found")
+	} else if len(links) == 1 {
+		if !selectionEmpty(span) {
+			// Second page (last)
+			pagination.PreviousLinkPresent = true
+			pagination.PreviousOffset, _ = getOffsetFromLink(links[0])
+			pagination.CurrentTitle = span.Text()
+		} else {
+			// First page
+			pagination.NextLinkPresent = true
+			pagination.NextOffset, _ = getOffsetFromLink(links[0])
+		}
+	} else if len(links) == 2 {
+		paginationChildren := paginationDiv.Children()
+
+		if paginationChildren.Last().Is("span") {
+			// Last page (3+)
+			pagination.PreviousLinkPresent = true
+			pagination.PreviousOffset, _ = getOffsetFromLink(links[1])
+			pagination.CurrentTitle = span.Text()
+		} else {
+			// Second page (if not last)
+			pagination.PreviousLinkPresent = true
+			pagination.PreviousOffset, _ = getOffsetFromLink(links[0])
+			pagination.NextLinkPresent = true
+			pagination.NextOffset, _ = getOffsetFromLink(links[1])
+			pagination.CurrentTitle = span.Text()
+		}
+	} else if len(links) == 3 {
+		// Any page between second and last (but not second and not last)
+		pagination.PreviousLinkPresent = true
+		pagination.PreviousOffset, _ = getOffsetFromLink(links[1])
+		pagination.NextLinkPresent = true
+		pagination.NextOffset, _ = getOffsetFromLink(links[2])
+		pagination.CurrentTitle = span.Text()
+	} else {
+		return pagination, errors.New(fmt.Sprintf("pagination has %d links (1-3 expected)", len(links)))
 	}
 
 	return pagination, nil
@@ -143,7 +213,7 @@ func parseImagesPage(document *goquery.Document) (ImagesPage, error) {
 		}, errors.New("page has no images or an error occured while parsing images")
 	}
 
-	pagination, err := parseSinglePagePagination(document)
+	pagination, err := parseImagePagePagination(document)
 	if err != nil {
 		log.Println(err)
 	}

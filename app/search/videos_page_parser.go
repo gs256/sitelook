@@ -67,7 +67,7 @@ func parseVideosPage(document *goquery.Document) (VideosPage, error) {
 		}, errors.New("page has no images or an error occured while parsing images")
 	}
 
-	pagination, err := parseSinglePagePagination(document)
+	pagination, err := parseVideoPagePagination(document)
 	if err != nil {
 		log.Println(err)
 	}

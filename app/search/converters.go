@@ -24,6 +24,7 @@ func makeUrlTitle(itemUrl string) (string, error) {
 	itemUrl = strings.TrimPrefix(itemUrl, "https://")
 	itemUrl = strings.TrimPrefix(itemUrl, "http://")
 	itemUrl = strings.TrimPrefix(itemUrl, "www.")
+	itemUrl = strings.TrimSuffix(itemUrl, "/")
 	return itemUrl, nil
 }
 
@@ -84,7 +85,7 @@ func createSinglePagePaginationContext(pagination SinglePagePagination, currentU
 	return SinglePagePaginationContext{
 		Visible:              true,
 		Type:                 PaginationTypeSinglePage,
-		FirstPageLinkPresent: pagination.PreviousLinkPresent,
+		FirstPageLinkPresent: pagination.PreviousLinkPresent && pagination.PreviousOffset != 0,
 		FirstPageUrl:         firstPageLinkHref,
 		PreviousLinkPresent:  pagination.PreviousLinkPresent,
 		PreviousUrl:          previousLinkHref,

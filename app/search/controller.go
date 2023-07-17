@@ -63,6 +63,16 @@ func SearchRoute(c *gin.Context) {
 		}
 		videosPageContext := createVideosPageContext(*searchResponse.VideosPage, currentUrl)
 		c.HTML(http.StatusOK, "video-search-page", videosPageContext)
+
+		logFile, err := os.OpenFile("log.txt", os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Fatal("error opening log file")
+		}
+
+		log.SetOutput(logFile)
+		spew.Fdump(log.Writer(), searchResponse)
+		defer logFile.Close()
+
 		return
 	} else if len(searchType) > 0 {
 		// c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("https://google.com/search?q=%s&tbm=%s", searchTerm, searchType))
