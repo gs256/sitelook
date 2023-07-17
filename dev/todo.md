@@ -3,6 +3,8 @@
 -   fix api
 -   keep video result descriptions' markup
 -   fix video page thumbnail styles
+-   handle no results found
+-   parse non-js version of "All" search page
 
 ### Backlog
 
@@ -21,4 +23,3 @@
 -   parse quick answers e.g. `how long is an hour`
 -   nested search results (now they are siblings)
 -   search suggestions
--   consider parsing non-js version of "All" search page
