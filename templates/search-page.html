@@ -7,9 +7,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         {{template "bootstrap-include"}}
-        <!--  -->
         {{template "sitelook-title" .}}
-        <!--  -->
         {{template "global-include"}}
         <link rel="stylesheet" href="/static/css/search-page.css" />
     </head>
@@ -21,7 +19,9 @@
             {{template "search-content" .}}
             <span></span>
 
-            {{template "search-page-pagination" .Pagination}}
+            {{if .SearchResults}}
+                {{template "search-page-pagination" .Pagination}}
+            {{end}}
         </div>
     </body>
 </html>

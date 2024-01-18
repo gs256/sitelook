@@ -1,26 +1,30 @@
 {{define "search-content"}}
 <span></span>
 
-{{range .SearchResults}}
-<div class="card my-3">
-    <div class="card-header">
-        <a href="{{.Url}}" class="link-underline link-underline-opacity-0">
-            <span class="h5">{{.Title}}</span>
-        </a>
-        <br />
-        <a
-            href="{{.Url}}"
-            class="link link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-            >{{.UrlTitle}}</a
-        >
-    </div>
-    {{if .Description}}
-    <div class="card-body">
-        <p class="card-text">{{.Description}}</p>
+{{if not .SearchResults}}
+    {{template "no-results-content" .}}
+{{else}}
+    {{range .SearchResults}}
+    <div class="card my-3">
+        <div class="card-header">
+            <a href="{{.Url}}" class="link-underline link-underline-opacity-0">
+                <span class="h5">{{.Title}}</span>
+            </a>
+            <br />
+            <a
+                href="{{.Url}}"
+                class="link link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+                >{{.UrlTitle}}</a
+            >
+        </div>
+        {{if .Description}}
+        <div class="card-body">
+            <p class="card-text">{{.Description}}</p>
+        </div>
+        {{end}}
     </div>
     {{end}}
-</div>
-{{end}}
 
-<span></span>
+    <span></span>
+    {{end}}
 {{end}}
