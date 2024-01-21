@@ -137,12 +137,10 @@ func getSearchUrl(searchTerm string, start int, searchType string) string {
 
 	if len(searchType) > 0 {
 		query.Add("tbm", searchType)
-
-		// non-javascript version of image and video page
-		if searchType == "isch" || searchType == "vid" {
-			query.Set("gbv", "1")
-		}
 	}
+
+	// non-js version
+	query.Set("gbv", "1")
 
 	searchUrl.RawQuery = query.Encode()
 	return searchUrl.String()

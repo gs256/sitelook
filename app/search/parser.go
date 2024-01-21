@@ -99,14 +99,8 @@ func parsePagination(document *goquery.Document) (MultiPagePagination, error) {
 
 func parseSearchResults(document *goquery.Document) []SearchResult {
 	results := []SearchResult{}
-	searchDiv := findSingle(document.Selection, "#search")
 
-	searchDiv.Find(".g > div").Each(func(i int, searchItem *goquery.Selection) {
-		// if the item has nested results it will force them to be parsed individually
-		if hasInside(searchItem, ".g") {
-			return
-		}
-
+	document.Find(".fP1Qef").Each(func(i int, searchItem *goquery.Selection) {
 		titleElement := findSingle(searchItem, "h3")
 		if selectionEmpty(titleElement) {
 			return
@@ -114,17 +108,13 @@ func parseSearchResults(document *goquery.Document) []SearchResult {
 
 		title := titleElement.Text()
 		url, _ := findSingle(searchItem, "a").Attr("href")
+		url = hrefFromQuery(url)
 
 		description := ""
-		descriptionElement := findSingle(searchItem, "div[data-sncf=\"1\"]")
+		descriptionElement := findSingle(searchItem, ".BNeawe.s3v9rd.AP7Wnd")
 
 		if !selectionEmpty(descriptionElement) {
 			description = descriptionElement.Text()
-		} else {
-			spans := searchItem.Find("span").Last()
-			if spans.Length() > 0 {
-				description = spans.Text()
-			}
 		}
 
 		results = append(results, SearchResult{
