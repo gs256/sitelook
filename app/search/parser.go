@@ -128,7 +128,7 @@ func parseSearchResults(document *goquery.Document) []SearchResult {
 }
 
 func parseSearchCorrection(document *goquery.Document) SearchCorrection {
-	correctionContainer := findSingle(document.Selection, "#taw")
+	correctionContainer := findSingle(document.Selection, "#scc")
 
 	correction := SearchCorrection{
 		Present: false,
@@ -136,8 +136,9 @@ func parseSearchCorrection(document *goquery.Document) SearchCorrection {
 
 	if correctionContainer.Length() != 0 {
 		correction.Present = true
-		correction.Title = findSingle(correctionContainer, "p > span").Text()
-		correctionHref, _ := findSingle(correctionContainer, "p > a").Attr("href")
+		title := findSingle(correctionContainer, ".EE3Upf").Text()
+		correction.Title = strings.Split(title, ":")[0]
+		correctionHref, _ := findSingle(correctionContainer, "a").Attr("href")
 		correctionUrl, _ := url.Parse(correctionHref)
 		correctionSearch := correctionUrl.Query().Get("q")
 		correction.CorrectSearchTerm = correctionSearch
