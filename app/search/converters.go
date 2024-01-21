@@ -137,7 +137,7 @@ func createSearchPageContext(searchPage SearchPage, currentUrl *url.URL) SearchP
 	return SearchPageContext{
 		SearchTerm:       searchPage.SearchTerm,
 		SearchResults:    searchResults,
-		Pagination:       createPaginationContext(searchPage.Pagination, currentUrl),
+		Pagination:       createSinglePagePaginationContext(searchPage.Pagination, currentUrl),
 		Navigation:       createNavigationContext(currentUrl),
 		SearchCorrection: createSearchCorrectionContext(searchPage.SearchCorrection, currentUrl),
 	}

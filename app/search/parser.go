@@ -2,6 +2,7 @@ package search
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"strconv"
@@ -43,7 +44,7 @@ type SearchCorrection struct {
 type SearchPage struct {
 	SearchTerm       string
 	SearchResults    []SearchResult
-	Pagination       MultiPagePagination
+	Pagination       SinglePagePagination
 	SearchCorrection SearchCorrection
 }
 
@@ -51,50 +52,66 @@ type CaptchaPage struct {
 	SearchTerm string
 }
 
-func parsePagination(document *goquery.Document) (MultiPagePagination, error) {
-	paginationDiv := findSingle(document.Selection, "div[role=\"navigation\"] table[role=\"presentation\"]")
+func parsePagination(document *goquery.Document) (SinglePagePagination, error) {
+	footer := findSingle(document.Selection, "footer > div")
+	paginationDiv := findSingle(footer, "div > a").Parent()
 
 	if selectionEmpty(paginationDiv) {
-		return MultiPagePagination{}, errors.New("pagination container not found")
+		return SinglePagePagination{}, errors.New("pagination not found")
 	}
 
-	pageLinks := []PageLink{}
-	previousPageOffset := 0
-	nextPageOffset := 0
-	paginationDiv.Find("td").Each(func(i int, td *goquery.Selection) {
-		if _, exists := td.Attr("role"); exists {
-			if i == 0 {
-				previousPageOffset, _ = getOffsetFromSelection(td)
-			} else {
-				nextPageOffset, _ = getOffsetFromSelection(td)
-			}
-		} else {
-			offset, hrefExists := getOffsetFromSelection(td)
-			hasSpanInside := false
-			if !hrefExists {
-				hasSpanInside = hasInside(td, "span")
-			}
-			number, err := strconv.Atoi(strings.TrimSpace(td.Text()))
-			if err == nil && (hrefExists || hasSpanInside) {
-				pageLink := PageLink{
-					PageNumber: number,
-					Offset:     offset,
-					IsCurrent:  hasSpanInside,
-				}
-				pageLinks = append(pageLinks, pageLink)
-			} else {
-				html, _ := td.Html()
-				log.Printf("error parsing pagination link: `%s`", html)
-			}
-		}
-	})
+	pagination := SinglePagePagination{
+		PreviousLinkPresent: false,
+		PreviousOffset:      0,
+		NextLinkPresent:     false,
+		NextOffset:          0,
+		CurrentTitle:        "",
+	}
 
-	return MultiPagePagination{
-		Type:           PaginationTypeMultiPage,
-		PageLinks:      pageLinks,
-		PreviousOffset: previousPageOffset,
-		NextOffset:     nextPageOffset,
-	}, nil
+	links := selectionToArray(paginationDiv.Find("a"))
+	span := findSingle(paginationDiv, "div > span")
+
+	if len(links) == 0 {
+		return pagination, errors.New("pagination links not found")
+	} else if len(links) == 1 {
+		if !selectionEmpty(span) {
+			// Second page (last)
+			pagination.PreviousLinkPresent = true
+			pagination.PreviousOffset, _ = getOffsetFromLink(links[0])
+			pagination.CurrentTitle = span.Text()
+		} else {
+			// First page
+			pagination.NextLinkPresent = true
+			pagination.NextOffset, _ = getOffsetFromLink(links[0])
+		}
+	} else if len(links) == 2 {
+		paginationChildren := paginationDiv.Children()
+
+		if paginationChildren.Last().Is("span") {
+			// Last page (3+)
+			pagination.PreviousLinkPresent = true
+			pagination.PreviousOffset, _ = getOffsetFromLink(links[1])
+			pagination.CurrentTitle = span.Text()
+		} else {
+			// Second page (if not last)
+			pagination.PreviousLinkPresent = true
+			pagination.PreviousOffset, _ = getOffsetFromLink(links[0])
+			pagination.NextLinkPresent = true
+			pagination.NextOffset, _ = getOffsetFromLink(links[1])
+			pagination.CurrentTitle = span.Text()
+		}
+	} else if len(links) == 3 {
+		// Any page between second and last (but not second and not last)
+		pagination.PreviousLinkPresent = true
+		pagination.PreviousOffset, _ = getOffsetFromLink(links[1])
+		pagination.NextLinkPresent = true
+		pagination.NextOffset, _ = getOffsetFromLink(links[2])
+		pagination.CurrentTitle = span.Text()
+	} else {
+		return pagination, errors.New(fmt.Sprintf("pagination has %d links (1-3 expected)", len(links)))
+	}
+
+	return pagination, nil
 }
 
 func parseSearchResults(document *goquery.Document) []SearchResult {

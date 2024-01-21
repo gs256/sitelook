@@ -47,7 +47,7 @@ type SearchCorrectionContext struct {
 type SearchPageContext struct {
 	SearchTerm       string
 	SearchResults    []SearchResultContext
-	Pagination       MultiPagePaginationContext
+	Pagination       SinglePagePaginationContext
 	Navigation       SearchNavigationContext
 	SearchCorrection SearchCorrectionContext
 }
