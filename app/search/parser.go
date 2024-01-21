@@ -147,8 +147,9 @@ func parseSearchCorrection(document *goquery.Document) SearchCorrection {
 }
 
 func parseSearchInput(document *goquery.Document) string {
-	searchInput := findSingle(document.Selection, "textarea")
-	return searchInput.Text()
+	searchInput := findSingle(document.Selection, "input[name=\"q\"]")
+	searchText := searchInput.AttrOr("value", "")
+	return searchText
 }
 
 func parseSearchPage(document *goquery.Document, start int) (*SearchPage, error) {
