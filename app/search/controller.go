@@ -36,11 +36,31 @@ func createHref(url *url.URL, query url.Values) string {
 	return url.Path + "?" + query.Encode()
 }
 
+type SearchQueryParams struct {
+	Type              string
+	Start             int
+	SearchLanguage    string
+	InterfaceLanguage string
+}
+
+func createSearchQueryParams(context *gin.Context) SearchQueryParams {
+	searchType := context.Query("tbm")
+	startQuery := context.Query("start")
+	lrQuery := context.Query("lr")
+	hlQuery := context.Query("hl")
+	start, _ := strconv.Atoi(startQuery)
+
+	return SearchQueryParams{
+		Type:              searchType,
+		Start:             start,
+		SearchLanguage:    lrQuery,
+		InterfaceLanguage: hlQuery,
+	}
+}
+
 func SearchRoute(c *gin.Context) {
 	searchTerm, _ := url.QueryUnescape(c.Query("q"))
-	searchType := c.Query("tbm")
-	startQuery := c.Query("start")
-	start, _ := strconv.Atoi(startQuery)
+	queryParams := createSearchQueryParams(c)
 	currentUrl := c.Request.URL
 
 	if len(searchTerm) == 0 {
@@ -48,16 +68,16 @@ func SearchRoute(c *gin.Context) {
 		return
 	}
 
-	if searchType == "isch" {
-		searchResponse, err := ImageSearch(searchTerm, start)
+	if queryParams.Type == "isch" {
+		searchResponse, err := ImageSearch(searchTerm, queryParams)
 		if err != nil {
 			log.Println(err)
 		}
 		imagesPageContext := createImagesPageContext(*searchResponse.ImagesPage, currentUrl)
 		c.HTML(http.StatusOK, "image-search-page", imagesPageContext)
 		return
-	} else if searchType == "vid" {
-		searchResponse, err := VideoSearch(searchTerm, start)
+	} else if queryParams.Type == "vid" {
+		searchResponse, err := VideoSearch(searchTerm, queryParams)
 		if err != nil {
 			log.Println(err)
 		}
@@ -74,12 +94,12 @@ func SearchRoute(c *gin.Context) {
 		defer logFile.Close()
 
 		return
-	} else if len(searchType) > 0 {
+	} else if len(queryParams.Type) > 0 {
 		// c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("https://google.com/search?q=%s&tbm=%s", searchTerm, searchType))
 		return
 	}
 
-	searchResponse, err := Search(searchTerm, start)
+	searchResponse, err := Search(searchTerm, queryParams)
 
 	if err != nil {
 		log.Fatal(err)

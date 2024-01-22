@@ -35,8 +35,8 @@ type VideoSearchResponse struct {
 	VideosPage *VideosPage
 }
 
-func Search(searchTerm string, offset int) (SearchResponse, error) {
-	searchUrl := getSearchUrl(searchTerm, offset, "")
+func Search(searchTerm string, params SearchQueryParams) (SearchResponse, error) {
+	searchUrl := getSearchUrl(searchTerm, params.Start, "", params.SearchLanguage, params.InterfaceLanguage)
 	document, err, status := getDocument(searchUrl)
 
 	if err != nil {
@@ -55,7 +55,7 @@ func Search(searchTerm string, offset int) (SearchResponse, error) {
 		searchPage := createEmptySearchPage()
 		return SearchResponse{Type: SearchResponsePage, SearchPage: &searchPage, Status: status}, nil
 	} else {
-		searchPage, err := parseSearchPage(document, offset)
+		searchPage, err := parseSearchPage(document, params.Start)
 
 		if err != nil {
 			return SearchResponse{Type: SearchResponseError, Status: status}, err
@@ -65,8 +65,8 @@ func Search(searchTerm string, offset int) (SearchResponse, error) {
 	}
 }
 
-func ImageSearch(searchTerm string, offset int) (ImageSearchResponse, error) {
-	searchUrl := getSearchUrl(searchTerm, offset, "isch")
+func ImageSearch(searchTerm string, params SearchQueryParams) (ImageSearchResponse, error) {
+	searchUrl := getSearchUrl(searchTerm, params.Start, "isch", params.SearchLanguage, params.InterfaceLanguage)
 	document, err, status := getDocument(searchUrl)
 
 	if err != nil {
@@ -95,8 +95,8 @@ func ImageSearch(searchTerm string, offset int) (ImageSearchResponse, error) {
 	}
 }
 
-func VideoSearch(searchTerm string, offset int) (VideoSearchResponse, error) {
-	searchUrl := getSearchUrl(searchTerm, offset, "vid")
+func VideoSearch(searchTerm string, params SearchQueryParams) (VideoSearchResponse, error) {
+	searchUrl := getSearchUrl(searchTerm, params.Start, "vid", params.SearchLanguage, params.InterfaceLanguage)
 	document, err, status := getDocument(searchUrl)
 
 	if err != nil {
@@ -125,7 +125,7 @@ func VideoSearch(searchTerm string, offset int) (VideoSearchResponse, error) {
 	}
 }
 
-func getSearchUrl(searchTerm string, start int, searchType string) string {
+func getSearchUrl(searchTerm string, start int, searchType string, searchLang string, interfaceLang string) string {
 	searchUrl, _ := url.Parse("https://google.com/search")
 	query := searchUrl.Query()
 
@@ -137,6 +137,14 @@ func getSearchUrl(searchTerm string, start int, searchType string) string {
 
 	if len(searchType) > 0 {
 		query.Add("tbm", searchType)
+	}
+
+	if len(searchLang) > 0 {
+		query.Add("lr", searchLang)
+	}
+
+	if len(interfaceLang) > 0 {
+		query.Add("hl", interfaceLang)
 	}
 
 	// non-js version

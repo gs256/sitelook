@@ -202,7 +202,7 @@ func createEmptySearchPageContext() SearchPageContext {
 }
 
 func createCaptchaPageContext(captchaPage CaptchaPage) CaptchaPageContext {
-	searchUrl := getSearchUrl(captchaPage.SearchTerm, 0, "")
+	searchUrl := getSearchUrl(captchaPage.SearchTerm, 0, "", "", "")
 
 	return CaptchaPageContext{
 		SearchRedirectUrl: searchUrl,
