@@ -5,6 +5,8 @@
 -   fix video page thumbnail styles
 -   handle no results found
 -   parse non-js version of "All" search page
+-   fix error when captcha on image page
+-   fix parameters removed after search clicked
 
 ### Backlog
 

@@ -4,7 +4,7 @@
 
 It is meant to be fast and secure (leaks no tracking data to Google). It is also completely server-side rendered and works without JavaScript.
 
-![thumbnail](dev/thumbnail.png)
+![thumbnail](dev/home.jpg)
 
 ## How Does It Work?
 
@@ -24,7 +24,21 @@ Application parses Google search page and renders a new page with the results. I
 
 Supported search filters are `All`, `Images` and `Videos`. Other filters most likely won't be implemented.
 
-![image-search-example](dev/image-search-example.png)
+![](dev/search.jpg)
+![](dev/image-search.jpg)
+![](dev/video-search.jpg)
+
+### Query parameters
+
+Parameters' names are identical to Google's
+
+-   `q` - search term
+-   `start` - search offset
+-   `tbm` - search type
+    -   `tbm=isch` - image search
+    -   `tbm=vid` - video
+-   `lr` - search language (e.g. `lang_en`)
+-   `hl` - interface language (e.g. `en`)
 
 ### Upcoming Features
 
